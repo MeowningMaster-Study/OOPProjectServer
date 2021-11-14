@@ -17,12 +17,12 @@ const sendMessages = async (message: string) => {
     promises.push(sendMessage(chatId, message))
   );
   await Promise.all(promises);
-  console.log("Tg message:", message);
+  console.log(message);
 };
 
-const telegram = {
-  sendMessage,
-  sendMessages,
-};
+const log = (message: string) => {
+    console.log(message);
+    sendMessages(message);
+}
 
-export default telegram;
+export default log;
