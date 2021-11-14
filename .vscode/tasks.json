@@ -5,7 +5,7 @@
       "type": "deno",
       "command": "run",
       "problemMatcher": ["$deno"],
-      "args": ["--allow-net", "src/main.ts"],
+      "args": ["-A", "src/main.ts"],
       "label": "deno: run"
     }
   ]

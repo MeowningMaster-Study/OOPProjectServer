@@ -1,57 +1,66 @@
-import { serve } from "https://deno.land/std@0.114.0/http/server_legacy.ts";
-import {
-  acceptWebSocket,
-  isWebSocketCloseEvent,
-  isWebSocketPingEvent,
-  WebSocket,
-} from "https://deno.land/std@0.114.0/ws/mod.ts";
+import { serve } from "https://deno.land/std@0.114.0/http/server.ts";
+import tg from "./telegram.ts";
 
-async function handleWs(sock: WebSocket) {
-  console.log("socket connected!");
-  try {
-    for await (const ev of sock) {
-      if (typeof ev === "string") {
-        // text message.
-        console.log("ws:Text", ev);
-        await sock.send(ev);
-      } else if (ev instanceof Uint8Array) {
-        // binary message.
-        console.log("ws:Binary", ev);
-      } else if (isWebSocketPingEvent(ev)) {
-        const [, body] = ev;
-        // ping.
-        console.log("ws:Ping", body);
-      } else if (isWebSocketCloseEvent(ev)) {
-        // close.
-        const { code, reason } = ev;
-        console.log("ws:Close", code, reason);
-      }
+const env = Deno.env.toObject();
+const port = Number(env.PORT) || 8000;
+
+// const onOpen = (_ev: Event) => {
+//   tg.sendMessages("Socket opened");
+// };
+
+// const onMessage = (ev: MessageEvent) => {
+//   tg.sendMessages(`Message: ${ev.data}`);
+// };
+
+// const onClose = (_ev: CloseEvent) => {
+//   tg.sendMessages("Socket closed");
+// };
+
+// const onError = (ev: Event | ErrorEvent) => {
+//   if (ev instanceof ErrorEvent) {
+//     tg.sendMessages(`Error: ${ev.error}`);
+//   }
+// };
+
+// const onRequest = (req: Request): Response => {
+//   const { socket, response } = Deno.upgradeWebSocket(req);
+//   socket.onopen = onOpen;
+//   socket.onmessage = onMessage;
+//   socket.onclose = onClose;
+//   socket.onerror = onError;
+//   return response;
+// };
+
+// serve(onRequest, { addr: `:${port}` });
+
+// console.log(`port: ${port}`);
+
+const logError = (msg: string) => {
+  console.log(msg);
+};
+const handleConnected = () => console.log("Connected to client ...");
+const handleMessage = (ws: WebSocket, data: string) => {
+  console.log("CLIENT >> " + data);
+  const reply = data;
+  if (reply === "exit") return ws.close();
+  ws.send(reply as string);
+};
+const handleError = (e: Event | ErrorEvent) =>
+  console.log(e instanceof ErrorEvent ? e.message : e.type);
+console.log(`Waiting for clients on ${port}`);
+const listener = Deno.listen({ port });
+for await (const conn of listener) {
+  const httpConn = Deno.serveHttp(conn);
+  for await (const { request: req, respondWith: res } of httpConn) {
+    if (req.headers.get("upgrade") != "websocket") {
+      res(new Response(null, { status: 501 }));
+      break;
     }
-  } catch (err) {
-    console.error(`failed to receive frame: ${err}`);
-
-    if (!sock.isClosed) {
-      await sock.close(1000).catch(console.error);
-    }
-  }
-}
-
-if (import.meta.main) {
-  /** websocket echo server */
-  const port = Deno.args[0] || "8080";
-  console.log(`websocket server is running on :${port}`);
-  for await (const req of serve(`:${port}`)) {
-    const { conn, r: bufReader, w: bufWriter, headers } = req;
-    acceptWebSocket({
-      conn,
-      bufReader,
-      bufWriter,
-      headers,
-    })
-      .then(handleWs)
-      .catch(async (err) => {
-        console.error(`failed to accept websocket: ${err}`);
-        await req.respond({ status: 400 });
-      });
+    const { socket: ws, response } = Deno.upgradeWebSocket(req);
+    ws.onopen = () => handleConnected();
+    ws.onmessage = (m) => handleMessage(ws, m.data);
+    ws.onclose = () => logError("Disconnected from client ...");
+    ws.onerror = (e) => handleError(e);
+    res(response);
   }
 }
