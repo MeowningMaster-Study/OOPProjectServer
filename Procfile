@@ -1,1 +1,1 @@
-web: deno run --allow-net src/main.ts
+web: deno run -A src/main.ts
