@@ -39,20 +39,30 @@ const init = (log: (message: string) => void) => {
         const table = new Table();
         const { id } = table;
         tables.set(id, table);
-        return id;
+        return table;
     };
 
     const processMessage = (message: string, playerId: PlayerId) => {
-        const object = JSON.parse(message);
-        const { action } = z
-            .object({
-                action: z.string(),
-            })
-            .parse(object);
+        try {
+            const object = JSON.parse(message);
+            const actionSchema = z.object({ action: z.string() });
+            const { action } = actionSchema.parse(object);
 
-        if (action === "CONNECT_TO_TABLE") {
-            return { action: "CONNECT_TO_TABLE_SUCCESS" };
-            //joinTable(playerId)
+            if (action === "CREATE_TABLE") {
+                const table = addTable();
+                return table.id;
+            }
+
+            if (action === "CONNECT_TO_TABLE") {
+                return { action: "CONNECT_TO_TABLE_SUCCESS" };
+                const tableSchema = z.object({ tableId: z.string() });
+                const { tableId } = tableSchema.parse(object);
+                joinTable(playerId, tableId);
+            }
+            throw `Unknown action ${action}`;
+        } catch (e) {
+            log(`Error: ${JSON.stringify(e)}`);
+            return { action: "ERROR" };
         }
     };
 
