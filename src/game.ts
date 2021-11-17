@@ -70,7 +70,6 @@ const init = (log: (message: string) => void) => {
             );
         });
         table.players.add(player);
-        return [...table.players];
     };
 
     const addTable = (player: Player) => {
@@ -99,11 +98,11 @@ const init = (log: (message: string) => void) => {
                 const { tableId } = tableSchema.parse(object);
                 const table = tables.get(tableId);
                 if (table) {
-                    const players = joinTable(player, table);
+                    joinTable(player, table);
                     return {
                         action: "JOIN_TABLE_SUCCESS",
                         tableId,
-                        players,
+                        players: [...table.players].map((player) => player.id),
                     };
                 }
                 return {
