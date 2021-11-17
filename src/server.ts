@@ -9,11 +9,13 @@ const init = async (port: number, log: (message: string) => void) => {
 
     const onClose = (ws: WebSocket, _ev: CloseEvent) => {
         const id = ids.get(ws);
+        ids.delete(ws);
         log(`Closed ${id}`);
     };
 
     const onError = (ws: WebSocket, ev: Event | ErrorEvent) => {
         const id = ids.get(ws);
+        ids.delete(ws);
         log(
             `Error ${id}:\n` + (ev instanceof ErrorEvent ? ev.message : ev.type)
         );
