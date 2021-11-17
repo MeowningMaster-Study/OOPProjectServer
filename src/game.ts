@@ -41,7 +41,6 @@ const init = (log: (message: string) => void) => {
             throw `Missing ${tableId}`;
         }
         table.players.add(playerId);
-        return { action: "CREATE_TABLE_SUCCESS", data: table };
     };
 
     const addTable = (playerId: PlayerId) => {
