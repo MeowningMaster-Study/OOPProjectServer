@@ -11,7 +11,6 @@ const init = (token: string) => {
         const url = new URL(serverLink + "bot" + token + "/sendMessage");
         url.searchParams.set("chat_id", chatId.toFixed());
         url.searchParams.set("text", message);
-        console.log(url);
         await fetch(url);
     };
 
