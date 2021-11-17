@@ -95,7 +95,7 @@ const init = (
 
             throw `Unknown action ${action}`;
         } catch (e) {
-            log(`Error: ${JSON.stringify(e)}`);
+            log(`Error ${fc(playerId)}:\n${JSON.stringify(e)}`);
             return { action: "ERROR" };
         }
     };

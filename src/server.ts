@@ -34,14 +34,14 @@ const init = async (port: number, log: (message: string) => void) => {
         );
     };
 
-    const onMessage = async (ws: WebSocket, ev: MessageEvent) => {
+    const onMessage = (ws: WebSocket, ev: MessageEvent) => {
         const id = players.get(ws);
         if (!id) {
             log(`Missing ${fc(id)}`);
             return;
         }
         const data = ev.data;
-        const rawResult = await game.processMessage(data, id);
+        const rawResult = game.processMessage(data, id);
         let result;
         if (typeof rawResult === "object") {
             result = JSON.stringify(rawResult);
@@ -49,7 +49,8 @@ const init = async (port: number, log: (message: string) => void) => {
             result = String(rawResult);
         }
         ws.send(result);
-        log(`${fc(id)}:\n` + data + "\nResponse:\n" + result);
+        const formattedData = JSON.stringify(JSON.parse(data));
+        log(`${fc(id)}:\n` + formattedData + "\nResponse:\n" + result);
     };
 
     const listener = Deno.listen({ port });
