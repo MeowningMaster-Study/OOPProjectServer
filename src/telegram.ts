@@ -31,4 +31,8 @@ const init = (token: string) => {
     return log;
 };
 
+export const formatCode = (code: string | undefined) => {
+    return `<code>${code}</code>`;
+};
+
 export default init;

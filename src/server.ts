@@ -1,22 +1,24 @@
+import { formatCode as cd } from "./telegram.ts";
+
 const init = async (port: number, log: (message: string) => void) => {
     const ids = new Map<WebSocket, string>();
 
     const onOpen = (ws: WebSocket, _ev: Event) => {
         const id = crypto.randomUUID();
         ids.set(ws, id);
-        log(`Opened \`${id}\``);
+        log(`Opened ${cd(id)}`);
     };
 
     const onClose = (ws: WebSocket, _ev: CloseEvent) => {
         const id = ids.get(ws);
         ids.delete(ws);
-        log(`Closed \`${id}\``);
+        log(`Closed ${cd(id)}`);
     };
 
     const onError = (ws: WebSocket, ev: Event | ErrorEvent) => {
         const id = ids.get(ws);
         log(
-            `Error \`${id}\`:\n` +
+            `Error ${cd(id)}:\n` +
                 (ev instanceof ErrorEvent ? ev.message : ev.type)
         );
     };
@@ -24,7 +26,7 @@ const init = async (port: number, log: (message: string) => void) => {
     const onMessage = (ws: WebSocket, ev: MessageEvent) => {
         const id = ids.get(ws);
         const data = ev.data;
-        log(`\`${id}\`:\n` + data);
+        log(`${cd(id)}:\n` + data);
         if (data === "exit") {
             return ws.close();
         }
