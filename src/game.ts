@@ -50,7 +50,7 @@ const init = (log: (message: string) => void) => {
 
             if (action === "CREATE_TABLE") {
                 const table = addTable();
-                return table.id;
+                return table;
             }
 
             if (action === "CONNECT_TO_TABLE") {
