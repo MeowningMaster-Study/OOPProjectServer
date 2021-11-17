@@ -38,14 +38,16 @@ const init = async (port: number, log: (message: string) => void) => {
         }
         const data = ev.data;
         const rawResult = game.processMessage(data, player);
-        let result;
-        if (typeof rawResult === "object") {
-            result = JSON.stringify(rawResult);
-        } else {
-            result = String(rawResult);
+        if (rawResult) {
+            let result;
+            if (typeof rawResult === "object") {
+                result = JSON.stringify(rawResult);
+            } else {
+                result = String(rawResult);
+            }
+            ws.send(result);
+            log(`${fc(player.id)}:\n` + data + "\nResponse:\n" + result);
         }
-        ws.send(result);
-        log(`${fc(player.id)}:\n` + data + "\nResponse:\n" + result);
     };
 
     const listener = Deno.listen({ port });

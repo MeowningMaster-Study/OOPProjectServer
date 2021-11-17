@@ -85,6 +85,10 @@ const init = (log: (message: string) => void) => {
             const actionSchema = z.object({ action: z.string() });
             const { action } = actionSchema.parse(object);
 
+            if (action === "PING") {
+                return;
+            }
+
             if (action === "CREATE_TABLE") {
                 const table = addTable(player);
                 return {
