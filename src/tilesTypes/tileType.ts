@@ -26,7 +26,7 @@ export const getIdType = (id: number) => {
 
 export type TileType = {
     sides: number[];
-    halfs: number[];
+    halves: number[];
     monastery: boolean;
     shield: boolean;
 };

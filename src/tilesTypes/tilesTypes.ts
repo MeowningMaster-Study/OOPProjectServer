@@ -28,7 +28,7 @@ const tilesTypesRaw: [number[], number[], boolean, boolean][] = [
 ];
 
 const tilesTypes: TileType[] = tilesTypesRaw.map((x) => {
-    return { sides: x[0], halfs: x[1], monastery: x[2], shield: x[3] };
+    return { sides: x[0], halves: x[1], monastery: x[2], shield: x[3] };
 });
 
 export default tilesTypes;
