@@ -30,7 +30,7 @@ for await (const conn of listener) {
     const httpConn = Deno.serveHttp(conn);
     for await (const { request: req, respondWith: res } of httpConn) {
         if (req.headers.get("upgrade") != "websocket") {
-            res(new Response(null, { status: 501 }));
+            res(new Response("Carcassone server is running"));
             continue;
         }
         const { socket: ws, response } = Deno.upgradeWebSocket(req);
