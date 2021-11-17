@@ -1,22 +1,29 @@
 import { formatCode as fc } from "./telegram/index.ts";
+import newGame, { PlayerId } from "./game.ts";
+import newId from "./idGenerator.ts";
 
 const init = async (port: number, log: (message: string) => void) => {
-    const usersIds = new Map<WebSocket, string>();
+    const game = newGame(log);
+    const players = new Map<WebSocket, PlayerId>();
 
     const onOpen = (ws: WebSocket, _ev: Event) => {
-        const id = "U" + crypto.randomUUID();
-        usersIds.set(ws, id);
-        log(`Opened ${fc(id)}`);
+        const id: PlayerId = newId();
+        players.set(ws, id);
+        game.addPlayer(id);
     };
 
     const onClose = (ws: WebSocket, _ev: CloseEvent) => {
-        const id = usersIds.get(ws);
-        usersIds.delete(ws);
-        log(`Closed ${fc(id)}`);
+        const id = players.get(ws);
+        if (!id) {
+            log(`Can't find player ${fc(id)}`);
+            return;
+        }
+        players.delete(ws);
+        game.removePlayer(id);
     };
 
     const onError = (ws: WebSocket, ev: Event | ErrorEvent) => {
-        const id = usersIds.get(ws);
+        const id = players.get(ws);
         log(
             `Error ${fc(id)}:\n` +
                 (ev instanceof ErrorEvent ? ev.message : ev.type)
@@ -24,13 +31,15 @@ const init = async (port: number, log: (message: string) => void) => {
     };
 
     const onMessage = (ws: WebSocket, ev: MessageEvent) => {
-        const id = usersIds.get(ws);
+        const id = players.get(ws);
+        if (!id) {
+            log(`Can't find player ${fc(id)}`);
+            return;
+        }
         const data = ev.data;
         log(`${fc(id)}:\n` + data);
-        if (data === "exit") {
-            return ws.close();
-        }
-        ws.send(data); // echo
+        const result = game.processMessage(data, id);
+        ws.send(JSON.stringify(result));
     };
 
     const listener = Deno.listen({ port });
