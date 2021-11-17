@@ -1,22 +1,32 @@
 const init = async (port: number, log: (message: string) => void) => {
-    const onOpen = (_ev: Event) => {
-        log("Socket opened");
+    const ids = new Map<WebSocket, string>();
+
+    const onOpen = (ws: WebSocket, _ev: Event) => {
+        const id = crypto.randomUUID();
+        ids.set(ws, id);
+        log(`Opened ${id}`);
     };
 
-    const onClose = (_ev: CloseEvent) => {
-        log("Socket closed");
+    const onClose = (ws: WebSocket, _ev: CloseEvent) => {
+        const id = ids.get(ws);
+        log(`Closed ${id}`);
     };
 
-    const onError = (ev: Event | ErrorEvent) => {
-        log(ev instanceof ErrorEvent ? ev.message : ev.type);
+    const onError = (ws: WebSocket, ev: Event | ErrorEvent) => {
+        const id = ids.get(ws);
+        log(
+            `Error ${id}:\n` + (ev instanceof ErrorEvent ? ev.message : ev.type)
+        );
     };
 
-    const onMessage = (ws: WebSocket, data: string) => {
-        log("CLIENT >> " + data);
+    const onMessage = (ws: WebSocket, ev: MessageEvent) => {
+        const id = ids.get(ws);
+        const data = ev.data;
+        log(`${id}:\n` + data);
         if (data === "exit") {
             return ws.close();
         }
-        ws.send(data);
+        ws.send(data); // echo
     };
 
     const listener = Deno.listen({ port });
@@ -30,10 +40,10 @@ const init = async (port: number, log: (message: string) => void) => {
                 continue;
             }
             const { socket: ws, response } = Deno.upgradeWebSocket(req);
-            ws.onopen = onOpen;
-            ws.onmessage = (m) => onMessage(ws, m.data);
-            ws.onclose = onClose;
-            ws.onerror = onError;
+            ws.onopen = (ev) => onOpen(ws, ev);
+            ws.onmessage = (ev) => onMessage(ws, ev);
+            ws.onclose = (ev) => onClose(ws, ev);
+            ws.onerror = (ev) => onError(ws, ev);
             res(response);
         }
     }
