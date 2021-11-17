@@ -1,3 +1,5 @@
+import { Bot } from "https://deno.land/x/telegram@v0.1.1/mod.ts";
+
 const chatIds = {
     meowningMaster: 587954669,
     dmiron: 530387974,
@@ -5,13 +7,14 @@ const chatIds = {
 };
 
 const init = (token: string) => {
-    const serverLink = "https://api.telegram.org/";
+    const bot = new Bot(token);
 
     const sendMessage = async (chatId: number, message: string) => {
-        const url = new URL(serverLink + "bot" + token + "/sendMessage");
-        url.searchParams.set("chat_id", chatId.toFixed());
-        url.searchParams.set("text", message);
-        await fetch(url);
+        await bot.telegram.sendMessage({
+            chat_id: chatId,
+            parse_mode: "MarkdownV2",
+            text: message,
+        });
     };
 
     const sendMessages = async (message: string) => {
@@ -32,7 +35,7 @@ const init = (token: string) => {
 };
 
 export const formatCode = (code: string | undefined) => {
-    return `<code>${code}</code>`;
+    return `\`${code}\``;
 };
 
 export default init;
