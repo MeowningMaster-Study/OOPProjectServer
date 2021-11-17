@@ -4,27 +4,28 @@ const init = async (port: number, log: (message: string) => void) => {
     const onOpen = (ws: WebSocket, _ev: Event) => {
         const id = crypto.randomUUID();
         ids.set(ws, id);
-        log(`Opened ${id}`);
+        log(`Opened \`${id}\``);
     };
 
     const onClose = (ws: WebSocket, _ev: CloseEvent) => {
         const id = ids.get(ws);
         ids.delete(ws);
-        log(`Closed ${id}`);
+        log(`Closed \`${id}\``);
     };
 
     const onError = (ws: WebSocket, ev: Event | ErrorEvent) => {
         const id = ids.get(ws);
         ids.delete(ws);
         log(
-            `Error ${id}:\n` + (ev instanceof ErrorEvent ? ev.message : ev.type)
+            `Error \`${id}\`:\n` +
+                (ev instanceof ErrorEvent ? ev.message : ev.type)
         );
     };
 
     const onMessage = (ws: WebSocket, ev: MessageEvent) => {
         const id = ids.get(ws);
         const data = ev.data;
-        log(`${id}:\n` + data);
+        log(`\`${id}\`:\n` + data);
         if (data === "exit") {
             return ws.close();
         }
