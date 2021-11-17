@@ -1,47 +1,43 @@
 import { formatCode as fc } from "./telegram/index.ts";
-import newGame, { PlayerId } from "./game.ts";
-import newId from "./idGenerator.ts";
+import newGame, { Player } from "./game.ts";
 
 const init = async (port: number, log: (message: string) => void) => {
     log("Server started");
-    const players = new Map<WebSocket, PlayerId>();
-    const sockets = new Map<PlayerId, WebSocket>();
-    const game = newGame(sockets, log);
+    const players = new Map<WebSocket, Player>();
+    const game = newGame(log);
 
     const onOpen = (ws: WebSocket, _ev: Event) => {
-        const id: PlayerId = "P" + newId();
-        players.set(ws, id);
-        sockets.set(id, ws);
-        game.addPlayer(id);
+        const player = new Player(ws);
+        players.set(ws, player);
+        game.addPlayer(player);
     };
 
     const onClose = (ws: WebSocket, _ev: CloseEvent) => {
-        const id = players.get(ws);
-        if (!id) {
-            log(`Missing ${fc(id)}`);
+        const player = players.get(ws);
+        if (!player) {
+            log(`Missing ${fc(player)}`);
             return;
         }
         players.delete(ws);
-        sockets.delete(id);
-        game.removePlayer(id);
+        game.removePlayer(player);
     };
 
     const onError = (ws: WebSocket, ev: Event | ErrorEvent) => {
-        const id = players.get(ws);
+        const player = players.get(ws);
         log(
-            `Error ${fc(id)}:\n` +
+            `Error ${fc(player?.id)}:\n` +
                 (ev instanceof ErrorEvent ? ev.message : ev.type)
         );
     };
 
     const onMessage = (ws: WebSocket, ev: MessageEvent) => {
-        const id = players.get(ws);
-        if (!id) {
-            log(`Missing ${fc(id)}`);
+        const player = players.get(ws);
+        if (!player) {
+            log(`Missing ${fc(player)}`);
             return;
         }
         const data = ev.data;
-        const rawResult = game.processMessage(data, id);
+        const rawResult = game.processMessage(data, player);
         let result;
         if (typeof rawResult === "object") {
             result = JSON.stringify(rawResult);
@@ -49,8 +45,7 @@ const init = async (port: number, log: (message: string) => void) => {
             result = String(rawResult);
         }
         ws.send(result);
-        const formattedData = JSON.stringify(JSON.parse(data));
-        log(`${fc(id)}:\n` + formattedData + "\nResponse:\n" + result);
+        log(`${fc(player.id)}:\n` + data + "\nResponse:\n" + result);
     };
 
     const listener = Deno.listen({ port });

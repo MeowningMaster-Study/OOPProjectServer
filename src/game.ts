@@ -4,9 +4,21 @@ import { z } from "https://deno.land/x/zod@v3.11.6/mod.ts";
 
 export type PlayerId = string;
 type TableId = string;
+
+export class Player {
+    id: PlayerId;
+    socket: WebSocket;
+    table?: Table;
+
+    constructor(socket: WebSocket) {
+        this.id = "P" + newId();
+        this.socket = socket;
+    }
+}
+
 class Table {
     id: TableId;
-    players: Set<PlayerId>;
+    players: Set<Player>;
 
     constructor() {
         this.id = "T" + newId();
@@ -14,88 +26,108 @@ class Table {
     }
 }
 
-const init = (
-    sockets: Map<PlayerId, WebSocket>,
-    log: (message: string) => void
-) => {
-    /** Кто где сидит */
-    const seating = new Map<PlayerId, TableId | undefined>();
+const init = (log: (message: string) => void) => {
+    const players = new Map<PlayerId, Player>();
     const tables = new Map<TableId, Table>();
 
-    const addPlayer = (playerId: PlayerId) => {
-        seating.set(playerId, undefined);
-        log(`${fc(playerId)} connected`);
+    const addPlayer = (player: Player) => {
+        players.set(player.id, player);
+        log(`${fc(player.id)} connected`);
     };
 
-    const removePlayer = (playerId: PlayerId) => {
-        const tableId = seating.get(playerId);
-        const table = tableId ? tables.get(tableId) : undefined;
+    const leaveTable = (player: Player) => {
+        const table = player.table;
         if (table) {
-            table.players.delete(playerId);
+            table.players.delete(player);
+            table.players.forEach((otherPlayer) => {
+                otherPlayer.socket.send(
+                    JSON.stringify({
+                        action: "PLAYER_LEFT",
+                        playerId: player.id,
+                    })
+                );
+            });
+            return table;
         }
-        seating.delete(playerId);
-        log(`${fc(playerId)} disconnected`);
+        return undefined;
     };
 
-    const joinTable = (playerId: PlayerId, tableId: TableId) => {
-        // TODO leave table
-        seating.set(playerId, tableId);
-        const table = tables.get(tableId);
-        if (!table) {
-            throw `Missing ${tableId}`;
-        }
-        table.players.forEach((playerId) => {
-            const socket = sockets.get(playerId);
-            if (!socket) {
-                throw `Missing ${playerId}`;
-            }
-            socket.send(
+    const removePlayer = (player: Player) => {
+        leaveTable(player);
+        players.delete(player.id);
+        log(`${fc(player.id)} disconnected`);
+    };
+
+    const joinTable = (player: Player, table: Table) => {
+        leaveTable(player);
+        player.table = table;
+        table.players.forEach((otherPlayer) => {
+            otherPlayer.socket.send(
                 JSON.stringify({
-                    action: "NEW_PLAYER",
-                    playerId,
+                    action: "PLAYER_JOINED",
+                    playerId: player.id,
                 })
             );
         });
-        table.players.add(playerId);
+        table.players.add(player);
         return [...table.players];
     };
 
-    const addTable = (playerId: PlayerId) => {
+    const addTable = (player: Player) => {
         const table = new Table();
         tables.set(table.id, table);
-        joinTable(playerId, table.id);
+        joinTable(player, table);
         return table;
     };
 
-    const processMessage = (message: string, playerId: PlayerId) => {
+    const processMessage = (message: string, player: Player) => {
         try {
             const object = JSON.parse(message);
             const actionSchema = z.object({ action: z.string() });
             const { action } = actionSchema.parse(object);
 
             if (action === "CREATE_TABLE") {
-                const table = addTable(playerId);
+                const table = addTable(player);
                 return {
                     action: "CREATE_TABLE_SUCCESS",
                     tableId: table.id,
                 };
             }
 
-            if (action === "CONNECT_TO_TABLE") {
+            if (action === "JOIN_TABLE") {
                 const tableSchema = z.object({ tableId: z.string() });
                 const { tableId } = tableSchema.parse(object);
-
-                const players = joinTable(playerId, tableId);
+                const table = tables.get(tableId);
+                if (table) {
+                    const players = joinTable(player, table);
+                    return {
+                        action: "JOIN_TABLE_SUCCESS",
+                        tableId,
+                        players,
+                    };
+                }
                 return {
-                    action: "CONNECT_TO_TABLE_SUCCESS",
-                    tableId,
-                    players,
+                    action: "JOIN_TABLE_FAILURE",
+                    tableId: tableId,
+                };
+            }
+
+            if (action === "LEAVE_TABLE") {
+                const table = leaveTable(player);
+                if (table) {
+                    return {
+                        action: "LEAVE_TABLE_SUCCESS",
+                        tableId: table.id,
+                    };
+                }
+                return {
+                    action: "LEAVE_TABLE_FAILURE",
                 };
             }
 
             throw `Unknown action ${action}`;
         } catch (e) {
-            log(`Error ${fc(playerId)}:\n${JSON.stringify(e)}`);
+            log(`Error ${fc(player.id)}:\n${JSON.stringify(e)}`);
             return { action: "ERROR" };
         }
     };
