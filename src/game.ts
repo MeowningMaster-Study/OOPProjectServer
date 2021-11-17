@@ -2,6 +2,7 @@ import { formatCode as fc } from "./telegram/index.ts";
 import newId from "./idGenerator.ts";
 import { z } from "https://deno.land/x/zod@v3.11.6/mod.ts";
 
+/** Helps keep websocket alive */
 export const pong = { action: "PONG" };
 
 export type PlayerId = string;
