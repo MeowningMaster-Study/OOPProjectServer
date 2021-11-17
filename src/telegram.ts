@@ -1,7 +1,7 @@
 const chatIds = {
     meowningMaster: 587954669,
     dmiron: 530387974,
-    //theblacl1ght: "",
+    theblacl1ght: 528003604,
 };
 
 const init = (token: string) => {
