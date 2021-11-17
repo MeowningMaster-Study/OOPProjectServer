@@ -57,7 +57,7 @@ const init = (
             );
         });
         table.players.add(playerId);
-        return table.players.values;
+        return table.players;
     };
 
     const addTable = (playerId: PlayerId) => {
