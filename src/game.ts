@@ -2,6 +2,8 @@ import { formatCode as fc } from "./telegram/index.ts";
 import newId from "./idGenerator.ts";
 import { z } from "https://deno.land/x/zod@v3.11.6/mod.ts";
 
+export const pong = { action: "PONG" };
+
 export type PlayerId = string;
 type TableId = string;
 
@@ -86,7 +88,7 @@ const init = (log: (message: string) => void) => {
             const { action } = actionSchema.parse(object);
 
             if (action === "PING") {
-                return;
+                return pong;
             }
 
             if (action === "CREATE_TABLE") {
