@@ -59,7 +59,7 @@ const init = (log: (message: string) => void) => {
 
             if (action === "CREATE_TABLE") {
                 const table = addTable(playerId);
-                return table;
+                return { action: "CREATE_TABLE_SUCCESS", data: table };
             }
 
             if (action === "CONNECT_TO_TABLE") {
