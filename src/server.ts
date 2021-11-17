@@ -3,12 +3,14 @@ import newGame, { PlayerId } from "./game.ts";
 import newId from "./idGenerator.ts";
 
 const init = async (port: number, log: (message: string) => void) => {
-    const game = newGame(log);
     const players = new Map<WebSocket, PlayerId>();
+    const sockets = new Map<PlayerId, WebSocket>();
+    const game = newGame(sockets, log);
 
     const onOpen = (ws: WebSocket, _ev: Event) => {
         const id: PlayerId = "P" + newId();
         players.set(ws, id);
+        sockets.set(id, ws);
         game.addPlayer(id);
     };
 
@@ -19,6 +21,7 @@ const init = async (port: number, log: (message: string) => void) => {
             return;
         }
         players.delete(ws);
+        sockets.delete(id);
         game.removePlayer(id);
     };
 

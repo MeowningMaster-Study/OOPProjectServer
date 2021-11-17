@@ -14,33 +14,50 @@ class Table {
     }
 }
 
-const init = (log: (message: string) => void) => {
-    const players = new Map<PlayerId, TableId | undefined>();
+const init = (
+    sockets: Map<PlayerId, WebSocket>,
+    log: (message: string) => void
+) => {
+    /** Кто где сидит */
+    const seating = new Map<PlayerId, TableId | undefined>();
     const tables = new Map<TableId, Table>();
 
     const addPlayer = (playerId: PlayerId) => {
-        players.set(playerId, undefined);
+        seating.set(playerId, undefined);
         log(`${fc(playerId)} connected`);
     };
 
     const removePlayer = (playerId: PlayerId) => {
-        const tableId = players.get(playerId);
+        const tableId = seating.get(playerId);
         const table = tableId ? tables.get(tableId) : undefined;
         if (table) {
             table.players.delete(playerId);
         }
-        players.delete(playerId);
+        seating.delete(playerId);
         log(`${fc(playerId)} disconnected`);
     };
 
     const joinTable = (playerId: PlayerId, tableId: TableId) => {
-        // leave table
-        players.set(playerId, tableId);
+        // TODO leave table
+        seating.set(playerId, tableId);
         const table = tables.get(tableId);
         if (!table) {
             throw `Missing ${tableId}`;
         }
+        table.players.forEach((playerId) => {
+            const socket = sockets.get(playerId);
+            if (!socket) {
+                throw `Missing ${playerId}`;
+            }
+            socket.send(
+                JSON.stringify({
+                    action: "NEW_PLAYER",
+                    data: { playerId },
+                })
+            );
+        });
         table.players.add(playerId);
+        return table.players.values;
     };
 
     const addTable = (playerId: PlayerId) => {
@@ -50,7 +67,7 @@ const init = (log: (message: string) => void) => {
         return table;
     };
 
-    const processMessage = async (message: string, playerId: PlayerId) => {
+    const processMessage = (message: string, playerId: PlayerId) => {
         try {
             const object = JSON.parse(message);
             const actionSchema = z.object({ action: z.string() });
@@ -58,19 +75,21 @@ const init = (log: (message: string) => void) => {
 
             if (action === "CREATE_TABLE") {
                 const table = addTable(playerId);
-                return { action: "CREATE_TABLE_SUCCESS", data: table };
+                return {
+                    action: "CREATE_TABLE_SUCCESS",
+                    data: { tableId: table.id },
+                };
             }
 
             if (action === "CONNECT_TO_TABLE") {
-                return await new Promise((resolve) => {
-                    setTimeout(() => {
-                        resolve({ action: "CONNECT_TO_TABLE_SUCCESS" });
-                    }, 3000);
-                });
-
                 const tableSchema = z.object({ tableId: z.string() });
                 const { tableId } = tableSchema.parse(object);
-                joinTable(playerId, tableId);
+
+                const players = joinTable(playerId, tableId);
+                return {
+                    action: "CONNECT_TO_TABLE_SUCCESS",
+                    data: { tableId, players },
+                };
             }
 
             throw `Unknown action ${action}`;
