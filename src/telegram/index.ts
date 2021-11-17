@@ -1,4 +1,5 @@
 import { Bot } from "https://deno.land/x/telegram@v0.1.1/mod.ts";
+import escapeRC from "./reservedCharacters.ts";
 
 const chatIds = {
     meowningMaster: 587954669,
@@ -13,7 +14,7 @@ const init = (token: string) => {
         await bot.telegram.sendMessage({
             chat_id: chatId,
             parse_mode: "MarkdownV2",
-            text: message,
+            text: escapeRC(message),
         });
     };
 

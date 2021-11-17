@@ -1,4 +1,4 @@
-import { formatCode as fc } from "./telegram.ts";
+import { formatCode as fc } from "./telegram/index.ts";
 
 const init = async (port: number, log: (message: string) => void) => {
     const ids = new Map<WebSocket, string>();
