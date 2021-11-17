@@ -45,7 +45,7 @@ const init = async (port: number, log: (message: string) => void) => {
             result = String(rawResult);
         }
         ws.send(result);
-        log(`${fc(id)}:\n` + data + "\n#######\n" + result);
+        log(`${fc(id)}:\n` + data + "\nResponse:\n" + result);
     };
 
     const listener = Deno.listen({ port });
