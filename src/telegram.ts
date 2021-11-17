@@ -1,28 +1,34 @@
-const serverLink = "https://api.telegram.org/";
-const botId = "2082920227:AAHoIh5h5t0Mq10ZyUy5Ic9uAY5qKQLhNbM";
 const chatIds = {
-  andriiSemenystyi: "587954669",
+    meowningMaster: 587954669,
+    dmiron: 530387974,
+    //theblacl1ght: "",
 };
 
-const sendMessage = async (chatId: string, message: string) => {
-  const url = new URL(serverLink + botId + "/sendMessage");
-  url.searchParams.set("chat_id", chatId);
-  url.searchParams.set("text", message);
-  await fetch(url);
+const init = (token: string) => {
+    const serverLink = "https://api.telegram.org/";
+
+    const sendMessage = async (chatId: number, message: string) => {
+        const url = new URL(serverLink + token + "/sendMessage");
+        url.searchParams.set("chat_id", chatId.toFixed());
+        url.searchParams.set("text", message);
+        await fetch(url);
+    };
+
+    const sendMessages = async (message: string) => {
+        const promises = new Array<Promise<void>>();
+        Object.values(chatIds).forEach((chatId) =>
+            promises.push(sendMessage(chatId, message))
+        );
+        await Promise.all(promises);
+        console.log(message);
+    };
+
+    const log = (message: string) => {
+        console.log(message);
+        sendMessages(message);
+    };
+
+    return log;
 };
 
-const sendMessages = async (message: string) => {
-  const promises = new Array<Promise<void>>();
-  Object.values(chatIds).forEach((chatId) =>
-    promises.push(sendMessage(chatId, message))
-  );
-  await Promise.all(promises);
-  console.log(message);
-};
-
-const log = (message: string) => {
-    console.log(message);
-    sendMessages(message);
-}
-
-export default log;
+export default init;
