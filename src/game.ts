@@ -51,7 +51,7 @@ const init = (log: (message: string) => void) => {
             .parse(object);
 
         if (action === "CONNECT_TO_TABLE") {
-            return JSON.stringify({ action: "CONNECT_TO_TABLE_SUCCESS" });
+            return { action: "CONNECT_TO_TABLE_SUCCESS" };
             //joinTable(playerId)
         }
     };
