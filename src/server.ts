@@ -3,8 +3,8 @@ import { formatCode as fc } from "./telegram/index.ts";
 const init = async (port: number, log: (message: string) => void) => {
     const ids = new Map<WebSocket, string>();
 
-    const onOpen = (ws: WebSocket, _ev: Event) => {
-        const id = crypto.randomUUID();
+    const onOpen = (ws: WebSocket, _ev: Event, ip: string) => {
+        const id = ip;
         ids.set(ws, id);
         log(`Opened ${fc(id)}`);
     };
@@ -37,6 +37,8 @@ const init = async (port: number, log: (message: string) => void) => {
     console.log(`Waiting for clients on ${port}`);
 
     for await (const conn of listener) {
+        const remoteAddr = conn.remoteAddr as Deno.NetAddr;
+        const ip = remoteAddr.hostname;
         const httpConn = Deno.serveHttp(conn);
         for await (const { request: req, respondWith: res } of httpConn) {
             if (req.headers.get("upgrade") != "websocket") {
@@ -44,7 +46,7 @@ const init = async (port: number, log: (message: string) => void) => {
                 continue;
             }
             const { socket: ws, response } = Deno.upgradeWebSocket(req);
-            ws.onopen = (ev) => onOpen(ws, ev);
+            ws.onopen = (ev) => onOpen(ws, ev, ip);
             ws.onmessage = (ev) => onMessage(ws, ev);
             ws.onclose = (ev) => onClose(ws, ev);
             ws.onerror = (ev) => onError(ws, ev);
