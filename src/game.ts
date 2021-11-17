@@ -33,32 +33,47 @@ const init = (log: (message: string) => void) => {
         log(`${fc(playerId)} disconnected`);
     };
 
-    const joinTable = (playerId: PlayerId, tableId: TableId) => {};
+    const joinTable = (playerId: PlayerId, tableId: TableId) => {
+        // leave table
+        players.set(playerId, tableId);
+        const table = tables.get(tableId);
+        if (!table) {
+            throw `Missing ${tableId}`;
+        }
+        table.players.add(playerId);
+        return { action: "CREATE_TABLE_SUCCESS", data: table };
+    };
 
-    const addTable = () => {
+    const addTable = (playerId: PlayerId) => {
         const table = new Table();
-        const { id } = table;
-        tables.set(id, table);
+        tables.set(table.id, table);
+        joinTable(playerId, table.id);
         return table;
     };
 
-    const processMessage = (message: string, playerId: PlayerId) => {
+    const processMessage = async (message: string, playerId: PlayerId) => {
         try {
             const object = JSON.parse(message);
             const actionSchema = z.object({ action: z.string() });
             const { action } = actionSchema.parse(object);
 
             if (action === "CREATE_TABLE") {
-                const table = addTable();
+                const table = addTable(playerId);
                 return table;
             }
 
             if (action === "CONNECT_TO_TABLE") {
-                return { action: "CONNECT_TO_TABLE_SUCCESS" };
+                return await new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve({ action: "CONNECT_TO_TABLE_SUCCESS" });
+                    }, 3000);
+                });
+
                 const tableSchema = z.object({ tableId: z.string() });
                 const { tableId } = tableSchema.parse(object);
                 joinTable(playerId, tableId);
             }
+
             throw `Unknown action ${action}`;
         } catch (e) {
             log(`Error: ${JSON.stringify(e)}`);

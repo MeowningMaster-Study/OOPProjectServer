@@ -15,7 +15,7 @@ const init = async (port: number, log: (message: string) => void) => {
     const onClose = (ws: WebSocket, _ev: CloseEvent) => {
         const id = players.get(ws);
         if (!id) {
-            log(`Can't find player ${fc(id)}`);
+            log(`Missing ${fc(id)}`);
             return;
         }
         players.delete(ws);
@@ -30,14 +30,14 @@ const init = async (port: number, log: (message: string) => void) => {
         );
     };
 
-    const onMessage = (ws: WebSocket, ev: MessageEvent) => {
+    const onMessage = async (ws: WebSocket, ev: MessageEvent) => {
         const id = players.get(ws);
         if (!id) {
-            log(`Can't find player ${fc(id)}`);
+            log(`Missing ${fc(id)}`);
             return;
         }
         const data = ev.data;
-        const rawResult = game.processMessage(data, id);
+        const rawResult = await game.processMessage(data, id);
         let result;
         if (typeof rawResult === "object") {
             result = JSON.stringify(rawResult);
