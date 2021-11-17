@@ -3,6 +3,7 @@ import newGame, { PlayerId } from "./game.ts";
 import newId from "./idGenerator.ts";
 
 const init = async (port: number, log: (message: string) => void) => {
+    log("Server started");
     const players = new Map<WebSocket, PlayerId>();
     const sockets = new Map<PlayerId, WebSocket>();
     const game = newGame(sockets, log);
