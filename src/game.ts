@@ -9,7 +9,7 @@ class Table {
     players: Set<PlayerId>;
 
     constructor() {
-        this.id = newId();
+        this.id = "T" + newId();
         this.players = new Set();
     }
 }

@@ -7,7 +7,7 @@ const init = async (port: number, log: (message: string) => void) => {
     const players = new Map<WebSocket, PlayerId>();
 
     const onOpen = (ws: WebSocket, _ev: Event) => {
-        const id: PlayerId = newId();
+        const id: PlayerId = "P" + newId();
         players.set(ws, id);
         game.addPlayer(id);
     };
