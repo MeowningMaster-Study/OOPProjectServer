@@ -52,7 +52,7 @@ const init = (
             socket.send(
                 JSON.stringify({
                     action: "NEW_PLAYER",
-                    data: { playerId },
+                    playerId,
                 })
             );
         });
@@ -77,7 +77,7 @@ const init = (
                 const table = addTable(playerId);
                 return {
                     action: "CREATE_TABLE_SUCCESS",
-                    data: { tableId: table.id },
+                    tableId: table.id,
                 };
             }
 
@@ -88,7 +88,8 @@ const init = (
                 const players = joinTable(playerId, tableId);
                 return {
                     action: "CONNECT_TO_TABLE_SUCCESS",
-                    data: { tableId, players },
+                    tableId,
+                    players,
                 };
             }
 
