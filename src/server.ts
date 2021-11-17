@@ -1,22 +1,22 @@
 import { formatCode as fc } from "./telegram/index.ts";
 
 const init = async (port: number, log: (message: string) => void) => {
-    const ids = new Map<WebSocket, string>();
+    const usersIds = new Map<WebSocket, string>();
 
-    const onOpen = (ws: WebSocket, _ev: Event, ip: string) => {
-        const id = ip;
-        ids.set(ws, id);
+    const onOpen = (ws: WebSocket, _ev: Event) => {
+        const id = "U" + crypto.randomUUID();
+        usersIds.set(ws, id);
         log(`Opened ${fc(id)}`);
     };
 
     const onClose = (ws: WebSocket, _ev: CloseEvent) => {
-        const id = ids.get(ws);
-        ids.delete(ws);
+        const id = usersIds.get(ws);
+        usersIds.delete(ws);
         log(`Closed ${fc(id)}`);
     };
 
     const onError = (ws: WebSocket, ev: Event | ErrorEvent) => {
-        const id = ids.get(ws);
+        const id = usersIds.get(ws);
         log(
             `Error ${fc(id)}:\n` +
                 (ev instanceof ErrorEvent ? ev.message : ev.type)
@@ -24,7 +24,7 @@ const init = async (port: number, log: (message: string) => void) => {
     };
 
     const onMessage = (ws: WebSocket, ev: MessageEvent) => {
-        const id = ids.get(ws);
+        const id = usersIds.get(ws);
         const data = ev.data;
         log(`${fc(id)}:\n` + data);
         if (data === "exit") {
@@ -37,8 +37,6 @@ const init = async (port: number, log: (message: string) => void) => {
     console.log(`Waiting for clients on ${port}`);
 
     for await (const conn of listener) {
-        const remoteAddr = conn.remoteAddr as Deno.NetAddr;
-        const ip = remoteAddr.hostname;
         const httpConn = Deno.serveHttp(conn);
         for await (const { request: req, respondWith: res } of httpConn) {
             if (req.headers.get("upgrade") != "websocket") {
@@ -46,7 +44,7 @@ const init = async (port: number, log: (message: string) => void) => {
                 continue;
             }
             const { socket: ws, response } = Deno.upgradeWebSocket(req);
-            ws.onopen = (ev) => onOpen(ws, ev, ip);
+            ws.onopen = (ev) => onOpen(ws, ev);
             ws.onmessage = (ev) => onMessage(ws, ev);
             ws.onclose = (ev) => onClose(ws, ev);
             ws.onerror = (ev) => onError(ws, ev);
