@@ -40,7 +40,12 @@ const init = async (port: number, log: (message: string) => void) => {
         const stringResult = JSON.stringify(result);
         ws.send(stringResult);
         if (result.action !== "PONG") {
-            log(`${fc(player.id)}:\n` + data + "\nResponse:\n" + stringResult);
+            log(
+                `${fc(player.id)}:\n` +
+                    fc(data) +
+                    "\nResponse:\n" +
+                    fc(stringResult)
+            );
         }
     };
 

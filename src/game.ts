@@ -1,7 +1,7 @@
 import { formatCode as fc } from "./telegram/index.ts";
 import newId from "./idGenerator.ts";
-import { z } from "https://deno.land/x/zod@v3.11.6/mod.ts";
-import { inActions, outActions } from "./gameActions.ts";
+import { z, ZodError } from "https://deno.land/x/zod@v3.11.6/mod.ts";
+import { inActionsZod, inActions, outActions } from "./gameActions.ts";
 
 export type PlayerId = string;
 type TableId = string;
@@ -56,7 +56,7 @@ const init = (log: (message: string) => void) => {
             table.players.forEach((otherPlayer) => {
                 otherPlayer.socket.send(
                     JSON.stringify({
-                        action: outActions.playerLeft,
+                        action: outActions.PLAYER_LEFT,
                         playerId: player.id,
                     })
                 );
@@ -81,7 +81,7 @@ const init = (log: (message: string) => void) => {
         table.players.forEach((otherPlayer) => {
             otherPlayer.socket.send(
                 JSON.stringify({
-                    action: outActions.playerJoined,
+                    action: outActions.PLAYER_JOINED,
                     playerId: player.id,
                 })
             );
@@ -99,58 +99,63 @@ const init = (log: (message: string) => void) => {
     const processMessage = (message: string, player: Player) => {
         try {
             const object = JSON.parse(message);
-            const actionSchema = z.object({ action: inActions });
+            const actionSchema = z.object({ action: inActionsZod });
             const { action } = actionSchema.parse(object);
 
-            if (action === inActions.enum.PING) {
-                return { action: outActions.pong };
+            if (action === inActions.PING) {
+                return { action: outActions };
             }
 
-            if (action === inActions.enum.CREATE_TABLE) {
+            if (action === inActions.CREATE_TABLE) {
                 const table = addTable(player);
                 return {
-                    action: outActions.createTable.success,
+                    action: outActions.CREATE_TABLE_SUCCESS,
                     tableId: table.id,
                 };
             }
 
-            if (action === inActions.enum.JOIN_TABLE) {
+            if (action === inActions.JOIN_TABLE) {
                 const tableSchema = z.object({ tableId: z.string() });
                 const { tableId } = tableSchema.parse(object);
                 const table = tables.get(tableId);
                 if (table) {
                     joinTable(player, table);
                     return {
-                        action: outActions.joinTable.success,
+                        action: outActions.JOIN_TABLE_SUCCESS,
                         tableId,
                         players: [...table.players].map((player) => player.id),
                     };
                 }
                 return {
-                    action: outActions.joinTable.failure,
+                    action: outActions.JOIN_TABLE_FAILURE,
                     tableId: tableId,
                 };
             }
 
-            if (action === inActions.enum.LEAVE_TABLE) {
+            if (action === inActions.LEAVE_TABLE) {
                 const table = leaveTable(player);
                 if (table) {
                     return {
-                        action: outActions.leaveTable.success,
+                        action: outActions.LEAVE_TABLE_SUCCESS,
                         tableId: table.id,
                     };
                 }
                 return {
-                    action: outActions.leaveTable.failure,
+                    action: outActions.LEAVE_TABLE_FAILURE,
                 };
             }
 
             throw `No action handler ${action}`;
         } catch (e) {
+            let description;
             if (e instanceof Error) {
-                return { action: outActions.error, description: e.message };
+                if (e instanceof ZodError) {
+                    description = e.flatten().fieldErrors;
+                } else {
+                    description = e.message;
+                }
             }
-            return { action: outActions.error, description: JSON.stringify(e) };
+            return { action: outActions.ERROR, description };
         }
     };
 
