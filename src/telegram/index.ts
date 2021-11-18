@@ -39,7 +39,7 @@ export const formatCode = (code: string | undefined) => {
 };
 
 export const formatBold = (text: string | undefined) => {
-    return `**${text}**`;
+    return `*${text}*`;
 };
 
 export default init;
