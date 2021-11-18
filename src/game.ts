@@ -83,7 +83,7 @@ const init = (log: (message: string) => void) => {
     const processMessage = (message: string, player: Player) => {
         try {
             const object = JSON.parse(message);
-            const actionSchema = z.object({ action: z.nativeEnum(InActions) });
+            const actionSchema = z.object({ action: z.string() });
             const { action } = actionSchema.parse(object);
 
             if (action === InActions.ping) {
