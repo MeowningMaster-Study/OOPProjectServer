@@ -2,7 +2,6 @@ import { formatCode as fc } from "./telegram/index.ts";
 import newGame, { Player } from "./game.ts";
 
 const init = async (port: number, log: (message: string) => void) => {
-    log("Server started");
     const players = new Map<WebSocket, Player>();
     const game = newGame(log);
 
@@ -46,7 +45,7 @@ const init = async (port: number, log: (message: string) => void) => {
     };
 
     const listener = Deno.listen({ port });
-    console.log(`Waiting for clients on ${port}`);
+    log(`Waiting for clients on ${port}`);
 
     for await (const conn of listener) {
         const httpConn = Deno.serveHttp(conn);
