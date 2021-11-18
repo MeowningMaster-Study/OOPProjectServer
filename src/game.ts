@@ -31,6 +31,13 @@ const init = (log: (message: string) => void) => {
     const players = new Map<PlayerId, Player>();
     const tables = new Map<TableId, Table>();
 
+    // for tests
+    {
+        const table = new Table();
+        table.id = "TTEST";
+        tables.set(table.id, table);
+    }
+
     const addPlayer = (player: Player) => {
         players.set(player.id, player);
         log(`${fc(player.id)} connected`);
