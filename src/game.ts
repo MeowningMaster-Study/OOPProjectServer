@@ -1,7 +1,7 @@
 import { formatCode as fc } from "./telegram/index.ts";
 import newId from "./idGenerator.ts";
 import { z } from "https://deno.land/x/zod@v3.11.6/mod.ts";
-import { InActions, outActions } from "./gameActions.ts";
+import { inActions, outActions } from "./gameActions.ts";
 
 export type PlayerId = string;
 type TableId = string;
@@ -86,11 +86,11 @@ const init = (log: (message: string) => void) => {
             const actionSchema = z.object({ action: z.string() });
             const { action } = actionSchema.parse(object);
 
-            if (action === InActions.ping) {
+            if (action === inActions.ping) {
                 return { action: outActions.pong };
             }
 
-            if (action === InActions.createTable) {
+            if (action === inActions.createTable) {
                 const table = addTable(player);
                 return {
                     action: outActions.createTable.success,
@@ -98,7 +98,7 @@ const init = (log: (message: string) => void) => {
                 };
             }
 
-            if (action === InActions.joinTable) {
+            if (action === inActions.joinTable) {
                 const tableSchema = z.object({ tableId: z.string() });
                 const { tableId } = tableSchema.parse(object);
                 const table = tables.get(tableId);
@@ -116,7 +116,7 @@ const init = (log: (message: string) => void) => {
                 };
             }
 
-            if (action === InActions.leaveTable) {
+            if (action === inActions.leaveTable) {
                 const table = leaveTable(player);
                 if (table) {
                     return {
