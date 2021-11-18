@@ -1,4 +1,4 @@
-import { formatCode as fc } from "./telegram/index.ts";
+import { formatCode as fc, formatBold as fb } from "./telegram/index.ts";
 import newGame, { Player } from "./game.ts";
 
 const init = async (port: number, log: (message: string) => void) => {
@@ -14,7 +14,7 @@ const init = async (port: number, log: (message: string) => void) => {
     const onClose = (ws: WebSocket, _ev: CloseEvent) => {
         const player = players.get(ws);
         if (!player) {
-            log(`Missing ${fc(player)}`);
+            log(`Missing ${fb(player)}`);
             return;
         }
         players.delete(ws);
@@ -24,7 +24,7 @@ const init = async (port: number, log: (message: string) => void) => {
     const onError = (ws: WebSocket, ev: Event | ErrorEvent) => {
         const player = players.get(ws);
         log(
-            `Error ${fc(player?.id)}:\n` +
+            `Error ${fb(player?.id)}:\n` +
                 (ev instanceof ErrorEvent ? ev.message : ev.type)
         );
     };
@@ -32,7 +32,7 @@ const init = async (port: number, log: (message: string) => void) => {
     const onMessage = (ws: WebSocket, ev: MessageEvent) => {
         const player = players.get(ws);
         if (!player) {
-            log(`Missing ${fc(player)}`);
+            log(`Missing ${fb(player)}`);
             return;
         }
         const data = ev.data;
@@ -41,7 +41,7 @@ const init = async (port: number, log: (message: string) => void) => {
         ws.send(stringResult);
         if (result.action !== "PONG") {
             log(
-                `${fc(player.id)}:\n` +
+                `${fb(player.id)}:\n` +
                     fc(data) +
                     "\nResponse:\n" +
                     fc(stringResult)

@@ -1,4 +1,4 @@
-import { formatCode as fc } from "./telegram/index.ts";
+import { formatBold as fb } from "./telegram/index.ts";
 import newId from "./idGenerator.ts";
 import { z, ZodError } from "https://deno.land/x/zod@v3.11.6/mod.ts";
 import { inActionsZod, inActions, outActions } from "./gameActions.ts";
@@ -40,12 +40,12 @@ const init = (log: (message: string) => void) => {
 
     const addPlayer = (player: Player) => {
         players.set(player.id, player);
-        log(`${fc(player.id)} connected`);
+        log(`${fb(player.id)} connected`);
     };
 
     const removeTable = (table: Table) => {
         tables.delete(table.id);
-        log(`${fc(table.id)} destructed`);
+        log(`${fb(table.id)} destructed`);
     };
 
     const leaveTable = (player: Player) => {
@@ -72,7 +72,7 @@ const init = (log: (message: string) => void) => {
     const removePlayer = (player: Player) => {
         leaveTable(player);
         players.delete(player.id);
-        log(`${fc(player.id)} disconnected`);
+        log(`${fb(player.id)} disconnected`);
     };
 
     const joinTable = (player: Player, table: Table) => {
