@@ -24,7 +24,6 @@ const init = (token: string) => {
             promises.push(sendMessage(chatId, message))
         );
         await Promise.all(promises);
-        console.log(message);
     };
 
     const log = (message: string) => {
