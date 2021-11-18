@@ -43,9 +43,15 @@ const init = (log: (message: string) => void) => {
         log(`${fc(player.id)} connected`);
     };
 
+    const removeTable = (table: Table) => {
+        tables.delete(table.id);
+        log(`${fc(table.id)} destructed`);
+    };
+
     const leaveTable = (player: Player) => {
         const table = player.table;
         if (table) {
+            player.table = undefined;
             table.players.delete(player);
             table.players.forEach((otherPlayer) => {
                 otherPlayer.socket.send(
@@ -55,6 +61,9 @@ const init = (log: (message: string) => void) => {
                     })
                 );
             });
+            if (table.players.size === 0) {
+                removeTable(table);
+            }
             return table;
         }
         return undefined;
