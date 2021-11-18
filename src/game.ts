@@ -132,12 +132,9 @@ const init = (log: (message: string) => void) => {
             throw `Unknown action ${action}`;
         } catch (e) {
             if (e instanceof Error) {
-                const { message: description } = e;
-                log(`${fc(player.id)} error:\n${description}`);
-                return { action: outActions.error, description };
+                return { action: outActions.error, description: e.message };
             }
-            log(`${fc(player.id)} unknown error:\n${JSON.stringify(e)}`);
-            return { action: outActions.error };
+            return { action: outActions.error, description: JSON.stringify(e) };
         }
     };
 
