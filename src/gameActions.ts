@@ -1,13 +1,13 @@
 import { z } from "https://deno.land/x/zod@v3.11.6/mod.ts";
 
-export const inActionsZod = z.enum([
+export const InActions = z.enum([
     "PING",
     "CREATE_TABLE",
     "JOIN_TABLE",
     "LEAVE_TABLE",
 ]);
 
-const outActionsZod = z.enum([
+export const OutActions = z.enum([
     "PONG",
     "PLAYER_JOINED",
     "PLAYER_LEFT",
@@ -19,5 +19,5 @@ const outActionsZod = z.enum([
     "ERROR",
 ]);
 
-export const inActions = inActionsZod.enum;
-export const outActions = outActionsZod.enum;
+export const inActions = InActions.enum;
+export const outActions = OutActions.enum;

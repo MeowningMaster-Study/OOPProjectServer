@@ -1,7 +1,7 @@
-import { formatBold as fb } from "./telegram/index.ts";
+import { formatCode as fc, formatBold as fb } from "./telegram/index.ts";
 import newId from "./idGenerator.ts";
 import { z, ZodError } from "https://deno.land/x/zod@v3.11.6/mod.ts";
-import { inActionsZod, inActions, outActions } from "./gameActions.ts";
+import { InActions, OutActions, inActions, outActions } from "./gameActions.ts";
 
 export type PlayerId = string;
 type TableId = string;
@@ -48,19 +48,27 @@ const init = (log: (message: string) => void) => {
         log(`${fb(table.id)} destructed`);
     };
 
+    const notifyPlayer = (
+        notify: Player,
+        about: Player,
+        action: z.infer<typeof OutActions>
+    ) => {
+        const message = JSON.stringify({
+            action,
+            playerId: about.id,
+        });
+        notify.socket.send(message);
+        log(`To ${fb(notify.id)}:\n${fc(message)}`);
+    };
+
     const leaveTable = (player: Player) => {
         const table = player.table;
         if (table) {
             player.table = undefined;
             table.players.delete(player);
-            table.players.forEach((otherPlayer) => {
-                otherPlayer.socket.send(
-                    JSON.stringify({
-                        action: outActions.PLAYER_LEFT,
-                        playerId: player.id,
-                    })
-                );
-            });
+            table.players.forEach((toNotify) =>
+                notifyPlayer(toNotify, player, outActions.PLAYER_LEFT)
+            );
             if (table.players.size === 0) {
                 removeTable(table);
             }
@@ -78,14 +86,9 @@ const init = (log: (message: string) => void) => {
     const joinTable = (player: Player, table: Table) => {
         leaveTable(player);
         player.table = table;
-        table.players.forEach((otherPlayer) => {
-            otherPlayer.socket.send(
-                JSON.stringify({
-                    action: outActions.PLAYER_JOINED,
-                    playerId: player.id,
-                })
-            );
-        });
+        table.players.forEach((toNotify) =>
+            notifyPlayer(toNotify, player, outActions.PLAYER_JOINED)
+        );
         table.players.add(player);
     };
 
@@ -99,7 +102,7 @@ const init = (log: (message: string) => void) => {
     const processMessage = (message: string, player: Player) => {
         try {
             const object = JSON.parse(message);
-            const actionSchema = z.object({ action: inActionsZod });
+            const actionSchema = z.object({ action: InActions });
             const { action } = actionSchema.parse(object);
 
             if (action === inActions.PING) {
