@@ -106,7 +106,7 @@ const init = (log: (message: string) => void) => {
             const { action } = actionSchema.parse(object);
 
             if (action === inActions.PING) {
-                return { action: outActions };
+                return { action: outActions.PONG };
             }
 
             if (action === inActions.CREATE_TABLE) {
