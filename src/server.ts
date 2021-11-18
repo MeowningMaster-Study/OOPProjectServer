@@ -1,5 +1,5 @@
 import { formatCode as fc } from "./telegram/index.ts";
-import newGame, { Player, pong } from "./game.ts";
+import newGame, { Player } from "./game.ts";
 
 const init = async (port: number, log: (message: string) => void) => {
     log("Server started");
@@ -37,18 +37,8 @@ const init = async (port: number, log: (message: string) => void) => {
             return;
         }
         const data = ev.data;
-        const rawResult = game.processMessage(data, player);
-        if (rawResult === pong) {
-            ws.send(JSON.stringify(rawResult));
-            return;
-        }
-        let result;
-        if (typeof rawResult === "object") {
-            result = JSON.stringify(rawResult);
-        } else {
-            result = String(rawResult);
-        }
-        ws.send(result);
+        const result = game.processMessage(data, player);
+        ws.send(JSON.stringify(result));
         log(`${fc(player.id)}:\n` + data + "\nResponse:\n" + result);
     };
 
