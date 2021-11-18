@@ -39,6 +39,7 @@ const init = async (port: number, log: (message: string) => void) => {
         const data = ev.data;
         const rawResult = game.processMessage(data, player);
         if (rawResult === pong) {
+            ws.send(JSON.stringify(rawResult));
             return;
         }
         let result;
