@@ -1,9 +1,9 @@
-export const inActions = {
-    ping: "PING",
-    createTable: "CREATE_TABLE",
-    joinTable: "JOIN_TABLE",
-    leaveTable: "LEAVE_TABLE",
-} as const;
+export enum InActions {
+    ping = "PING",
+    createTable = "CREATE_TABLE",
+    joinTable = "JOIN_TABLE",
+    leaveTable = "LEAVE_TABLE",
+}
 
 export const outActions = {
     pong: "PONG",

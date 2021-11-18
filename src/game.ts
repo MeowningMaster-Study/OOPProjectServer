@@ -1,7 +1,7 @@
 import { formatCode as fc } from "./telegram/index.ts";
 import newId from "./idGenerator.ts";
 import { z } from "https://deno.land/x/zod@v3.11.6/mod.ts";
-import { inActions, outActions } from "./gameActions.ts";
+import { InActions, outActions } from "./gameActions.ts";
 
 export type PlayerId = string;
 type TableId = string;
@@ -83,14 +83,14 @@ const init = (log: (message: string) => void) => {
     const processMessage = (message: string, player: Player) => {
         try {
             const object = JSON.parse(message);
-            const actionSchema = z.object({ action: z.nativeEnum(inActions) });
+            const actionSchema = z.object({ action: z.nativeEnum(InActions) });
             const { action } = actionSchema.parse(object);
 
-            if (action === inActions.ping) {
+            if (action === InActions.ping) {
                 return { action: outActions.pong };
             }
 
-            if (action === inActions.createTable) {
+            if (action === InActions.createTable) {
                 const table = addTable(player);
                 return {
                     action: outActions.createTable.success,
@@ -98,7 +98,7 @@ const init = (log: (message: string) => void) => {
                 };
             }
 
-            if (action === inActions.joinTable) {
+            if (action === InActions.joinTable) {
                 const tableSchema = z.object({ tableId: z.string() });
                 const { tableId } = tableSchema.parse(object);
                 const table = tables.get(tableId);
@@ -116,7 +116,7 @@ const init = (log: (message: string) => void) => {
                 };
             }
 
-            if (action === inActions.leaveTable) {
+            if (action === InActions.leaveTable) {
                 const table = leaveTable(player);
                 if (table) {
                     return {
