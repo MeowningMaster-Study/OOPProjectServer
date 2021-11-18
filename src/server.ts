@@ -38,9 +38,10 @@ const init = async (port: number, log: (message: string) => void) => {
         }
         const data = ev.data;
         const result = game.processMessage(data, player);
-        ws.send(JSON.stringify(result));
+        const stringResult = JSON.stringify(result);
+        ws.send(stringResult);
         if (result.action !== "PONG") {
-            log(`${fc(player.id)}:\n` + data + "\nResponse:\n" + result);
+            log(`${fc(player.id)}:\n` + data + "\nResponse:\n" + stringResult);
         }
     };
 

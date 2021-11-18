@@ -132,6 +132,7 @@ const init = (log: (message: string) => void) => {
             throw `Unknown action ${action}`;
         } catch (e) {
             const description = JSON.stringify(e);
+            console.log(e);
             log(`Error ${fc(player.id)}:\n${description}`);
             return { action: outActions.error, description };
         }
