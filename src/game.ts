@@ -1,6 +1,7 @@
 import { formatCode as fc } from "./telegram/index.ts";
 import newId from "./idGenerator.ts";
 import { z } from "https://deno.land/x/zod@v3.11.6/mod.ts";
+import { inActions, outActions } from "./gameActions.ts";
 
 export type PlayerId = string;
 type TableId = string;
@@ -42,7 +43,7 @@ const init = (log: (message: string) => void) => {
             table.players.forEach((otherPlayer) => {
                 otherPlayer.socket.send(
                     JSON.stringify({
-                        action: "PLAYER_LEFT",
+                        action: outActions.playerLeft,
                         playerId: player.id,
                     })
                 );
@@ -64,7 +65,7 @@ const init = (log: (message: string) => void) => {
         table.players.forEach((otherPlayer) => {
             otherPlayer.socket.send(
                 JSON.stringify({
-                    action: "PLAYER_JOINED",
+                    action: outActions.playerJoined,
                     playerId: player.id,
                 })
             );
@@ -85,53 +86,54 @@ const init = (log: (message: string) => void) => {
             const actionSchema = z.object({ action: z.string() });
             const { action } = actionSchema.parse(object);
 
-            if (action === "PING") {
-                return { action: "PONG" };
+            if (action === inActions.ping) {
+                return { action: outActions.pong };
             }
 
-            if (action === "CREATE_TABLE") {
+            if (action === inActions.createTable) {
                 const table = addTable(player);
                 return {
-                    action: "CREATE_TABLE_SUCCESS",
+                    action: outActions.createTable.success,
                     tableId: table.id,
                 };
             }
 
-            if (action === "JOIN_TABLE") {
+            if (action === inActions.joinTable) {
                 const tableSchema = z.object({ tableId: z.string() });
                 const { tableId } = tableSchema.parse(object);
                 const table = tables.get(tableId);
                 if (table) {
                     joinTable(player, table);
                     return {
-                        action: "JOIN_TABLE_SUCCESS",
+                        action: outActions.joinTable.success,
                         tableId,
                         players: [...table.players].map((player) => player.id),
                     };
                 }
                 return {
-                    action: "JOIN_TABLE_FAILURE",
+                    action: outActions.joinTable.failure,
                     tableId: tableId,
                 };
             }
 
-            if (action === "LEAVE_TABLE") {
+            if (action === inActions.leaveTable) {
                 const table = leaveTable(player);
                 if (table) {
                     return {
-                        action: "LEAVE_TABLE_SUCCESS",
+                        action: outActions.leaveTable.success,
                         tableId: table.id,
                     };
                 }
                 return {
-                    action: "LEAVE_TABLE_FAILURE",
+                    action: outActions.leaveTable.failure,
                 };
             }
 
             throw `Unknown action ${action}`;
         } catch (e) {
-            log(`Error ${fc(player.id)}:\n${JSON.stringify(e)}`);
-            return { action: "ERROR", description: JSON.stringify(e) };
+            const description = JSON.stringify(e);
+            log(`Error ${fc(player.id)}:\n${description}`);
+            return { action: outActions.error, description };
         }
     };
 
