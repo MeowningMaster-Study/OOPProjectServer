@@ -99,14 +99,14 @@ const init = (log: (message: string) => void) => {
     const processMessage = (message: string, player: Player) => {
         try {
             const object = JSON.parse(message);
-            const actionSchema = z.object({ action: z.string() });
+            const actionSchema = z.object({ action: inActions });
             const { action } = actionSchema.parse(object);
 
-            if (action === inActions.ping) {
+            if (action === inActions.enum.PING) {
                 return { action: outActions.pong };
             }
 
-            if (action === inActions.createTable) {
+            if (action === inActions.enum.CREATE_TABLE) {
                 const table = addTable(player);
                 return {
                     action: outActions.createTable.success,
@@ -114,7 +114,7 @@ const init = (log: (message: string) => void) => {
                 };
             }
 
-            if (action === inActions.joinTable) {
+            if (action === inActions.enum.JOIN_TABLE) {
                 const tableSchema = z.object({ tableId: z.string() });
                 const { tableId } = tableSchema.parse(object);
                 const table = tables.get(tableId);
@@ -132,7 +132,7 @@ const init = (log: (message: string) => void) => {
                 };
             }
 
-            if (action === inActions.leaveTable) {
+            if (action === inActions.enum.LEAVE_TABLE) {
                 const table = leaveTable(player);
                 if (table) {
                     return {
@@ -145,7 +145,7 @@ const init = (log: (message: string) => void) => {
                 };
             }
 
-            throw `Unknown action ${action}`;
+            throw `No action handler ${action}`;
         } catch (e) {
             if (e instanceof Error) {
                 return { action: outActions.error, description: e.message };

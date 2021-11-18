@@ -1,9 +1,11 @@
-export const inActions = {
-    ping: "PING",
-    createTable: "CREATE_TABLE",
-    joinTable: "JOIN_TABLE",
-    leaveTable: "LEAVE_TABLE",
-} as const;
+import { z } from "https://deno.land/x/zod@v3.11.6/mod.ts";
+
+export const inActions = z.enum([
+    "PING",
+    "CREATE_TABLE",
+    "JOIN_TABLE",
+    "LEAVE_TABLE",
+]);
 
 export const outActions = {
     pong: "PONG",
