@@ -144,7 +144,7 @@ const init = (log: (message: string) => void) => {
     const leaveTable = (player: Player) => {
         const table = player.table;
         if (!table) {
-            throw new Error("The player has no table to leave");
+            return undefined;
         }
         player.table = undefined;
         table.players.delete(player);
@@ -267,6 +267,9 @@ const init = (log: (message: string) => void) => {
 
             if (action === inActions.LEAVE_TABLE) {
                 const table = leaveTable(player);
+                if (!table) {
+                    throw new Error("The player has no table to leave");
+                }
                 return {
                     action: outActions.LEAVE_TABLE_SUCCESS,
                     tableId: table.id,
