@@ -126,17 +126,19 @@ const init = (log: (message: string) => void) => {
 
     const notifyPlayer = (
         notify: Player,
-        about: Player,
         action: z.infer<typeof OutActions>,
+        about?: Player,
         tile?: Tile
     ) => {
         // todo tile
+        const playerId = about?.id;
         const message = JSON.stringify({
             action,
-            playerId: about.id,
+            playerId,
         });
         notify.socket.send(message);
-        log(`To ${fb(notify.id)} by ${fb(about.id)}:\n${fc(message)}`);
+        const aboutText = about ? `by ${fb(about.id)}` : "";
+        log(`To ${fb(notify.id)}${aboutText}:\n${fc(message)}`);
     };
 
     const leaveTable = (player: Player) => {
@@ -147,7 +149,7 @@ const init = (log: (message: string) => void) => {
         player.table = undefined;
         table.players.delete(player);
         table.players.forEach((toNotify) =>
-            notifyPlayer(toNotify, player, outActions.PLAYER_LEFT)
+            notifyPlayer(toNotify, outActions.PLAYER_LEFT, player)
         );
         if (table.players.size === 0) {
             removeTable(table);
@@ -165,7 +167,7 @@ const init = (log: (message: string) => void) => {
         leaveTable(player);
         player.table = table;
         table.players.forEach((toNotify) =>
-            notifyPlayer(toNotify, player, outActions.PLAYER_JOINED)
+            notifyPlayer(toNotify, outActions.PLAYER_JOINED, player)
         );
         table.players.add(player);
     };
@@ -185,8 +187,10 @@ const init = (log: (message: string) => void) => {
         to.socket.send(JSON.stringify(message));
     };
 
-    const endGame = () => {
-        //todo
+    const endGame = (table: Table) => {
+        table.players.forEach((toNotify) =>
+            notifyPlayer(toNotify, outActions.GAME_ENDED)
+        );
     };
 
     const startGame = (player: Player) => {
@@ -197,7 +201,7 @@ const init = (log: (message: string) => void) => {
         const game = table.startGame();
         const tile = game.drawTile();
         if (!tile) {
-            endGame();
+            endGame(table);
             return;
         }
         sendTile(tile, game.getCurrentPlayer());
@@ -215,11 +219,11 @@ const init = (log: (message: string) => void) => {
         }
         game.putTile(player, tile);
         table.players.forEach((toNotify) =>
-            notifyPlayer(toNotify, player, outActions.PUT_TILE, tile)
+            notifyPlayer(toNotify, outActions.PUT_TILE, player, tile)
         );
         const nextTile = game.drawTile();
         if (!nextTile) {
-            endGame();
+            endGame(table);
             return;
         }
         sendTile(nextTile, game.getCurrentPlayer());
