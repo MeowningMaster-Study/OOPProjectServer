@@ -50,17 +50,20 @@ class Game {
 
     constructor(players: Player[]) {
         this.players = players;
-        this.field = new Array(maxFieldSize).map(() =>
+        this.field = Array.from({ length: maxFieldSize }, () =>
             new Array(maxFieldSize).fill(undefined)
         );
         this.meeples = new Map(
             players.map((player) => [
                 player,
-                new Array(meeplesCountByPlayer).map(() => new Meeple(player)),
+                Array.from(
+                    { length: meeplesCountByPlayer },
+                    () => new Meeple(player)
+                ),
             ])
         );
         this.deck = countOfTiles.flatMap((count, i) =>
-            new Array(count).map(() => new Tile(tilesTypes[i]))
+            Array.from({ length: count }, () => new Tile(tilesTypes[i]))
         );
     }
 
@@ -137,7 +140,7 @@ const init = (log: (message: string) => void) => {
             playerId,
         });
         notify.socket.send(message);
-        const aboutText = about ? `by ${fb(about.id)}` : "";
+        const aboutText = about ? ` by ${fb(about.id)}` : "";
         log(`To ${fb(notify.id)}${aboutText}:\n${fc(message)}`);
     };
 
@@ -181,13 +184,14 @@ const init = (log: (message: string) => void) => {
 
     const sendTile = (tile: Tile, to: Player) => {
         const message = {
-            action: outActions.DRAW_TILE,
+            action: outActions.TILE_DRAWN,
             tileType: tile.type.id,
         };
         to.socket.send(JSON.stringify(message));
     };
 
     const endGame = (table: Table) => {
+        table.game = undefined;
         table.players.forEach((toNotify) =>
             notifyPlayer(toNotify, outActions.GAME_ENDED)
         );
@@ -205,7 +209,6 @@ const init = (log: (message: string) => void) => {
             return;
         }
         sendTile(tile, game.getCurrentPlayer());
-        return;
     };
 
     const putTile = (player: Player, tile: Tile) => {
@@ -219,7 +222,7 @@ const init = (log: (message: string) => void) => {
         }
         game.putTile(player, tile);
         table.players.forEach((toNotify) =>
-            notifyPlayer(toNotify, outActions.PUT_TILE, player, tile)
+            notifyPlayer(toNotify, outActions.TILE_PUTTED, player, tile)
         );
         const nextTile = game.drawTile();
         if (!nextTile) {
@@ -278,11 +281,17 @@ const init = (log: (message: string) => void) => {
 
             if (action === inActions.START_GAME) {
                 startGame(player);
+                return {
+                    action: outActions.NONE,
+                };
             }
 
             if (action === inActions.PUT_TILE) {
                 // todo get tile from message
                 putTile(player, new Tile(tilesTypes[0]));
+                return {
+                    action: outActions.NONE,
+                };
             }
 
             throw `No action handler ${action}`;

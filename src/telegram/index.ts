@@ -1,4 +1,4 @@
-import { Bot } from "https://deno.land/x/telegram@v0.1.1/mod.ts";
+import { Bot, TelegramError } from "https://deno.land/x/telegram@v0.1.1/mod.ts";
 import escapeRC from "./reservedCharacters.ts";
 
 const chatIds = {
@@ -11,11 +11,17 @@ const init = (token: string) => {
     const bot = new Bot(token);
 
     const sendMessage = async (chatId: number, message: string) => {
-        await bot.telegram.sendMessage({
-            chat_id: chatId,
-            parse_mode: "MarkdownV2",
-            text: escapeRC(message),
-        });
+        try {
+            await bot.telegram.sendMessage({
+                chat_id: chatId,
+                parse_mode: "MarkdownV2",
+                text: escapeRC(message),
+            });
+        } catch (e) {
+            if (e instanceof TelegramError) {
+                console.error("Telegram error on message: ", e.message);
+            }
+        }
     };
 
     const sendMessages = async (message: string) => {

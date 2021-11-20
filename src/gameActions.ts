@@ -10,6 +10,7 @@ export const InActions = z.enum([
 ]);
 
 export const OutActions = z.enum([
+    "NONE",
     "PONG",
     "PLAYER_JOINED",
     "PLAYER_LEFT",
@@ -20,8 +21,8 @@ export const OutActions = z.enum([
     "ERROR",
     "GAME_STARTED",
     "GAME_ENDED",
-    "DRAW_TILE",
-    "PUT_TILE",
+    "TILE_DRAWN",
+    "TILE_PUTTED",
 ]);
 
 export const inActions = InActions.enum;
