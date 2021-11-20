@@ -27,8 +27,10 @@ const tilesTypesRaw: [number[], number[], boolean, boolean][] = [
     [[1, 2, 3, 4], [9, 10, 10, 11, 11, 12, 12, 9], false, false],
 ];
 
-const tilesTypes: TileType[] = tilesTypesRaw.map((x) => {
-    return { sides: x[0], halves: x[1], monastery: x[2], shield: x[3] };
+export const tilesTypes: TileType[] = tilesTypesRaw.map((x, i) => {
+    return { id: i, sides: x[0], halves: x[1], monastery: x[2], shield: x[3] };
 });
 
-export default tilesTypes;
+export const countOfTiles = [
+    4, 2, 1, 3, 1, 1, 2, 3, 2, 3, 2, 1, 2, 2, 3, 5, 3, 3, 3, 4, 8, 9, 4,
+];

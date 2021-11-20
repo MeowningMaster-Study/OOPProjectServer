@@ -2,6 +2,8 @@ import { formatCode as fc, formatBold as fb } from "./telegram/index.ts";
 import newId from "./idGenerator.ts";
 import { z, ZodError } from "https://deno.land/x/zod@v3.11.6/mod.ts";
 import { InActions, OutActions, inActions, outActions } from "./gameActions.ts";
+import { TileType } from "./tilesTypes/tileType.ts";
+import { tilesTypes, countOfTiles } from "./tilesTypes/tilesTypes.ts";
 
 export type PlayerId = string;
 type TableId = string;
@@ -17,13 +19,87 @@ export class Player {
     }
 }
 
+class Tile {
+    position?: [number, number];
+    type: TileType;
+    rotation = 0;
+
+    constructor(type: TileType) {
+        this.type = type;
+    }
+}
+
+const meeplesCountByPlayer = 7;
+class Meeple {
+    owner: Player;
+    tile?: Tile;
+    placeId = 0;
+
+    constructor(owner: Player) {
+        this.owner = owner;
+    }
+}
+
+const maxFieldSize = 72 * 2;
+class Game {
+    round = 0;
+    players: Player[];
+    field: (Tile | undefined)[][];
+    deck: Tile[];
+    meeples: Map<Player, Meeple[]>;
+
+    constructor(players: Player[]) {
+        this.players = players;
+        this.field = new Array(maxFieldSize).map(() =>
+            new Array(maxFieldSize).fill(undefined)
+        );
+        this.meeples = new Map(
+            players.map((player) => [
+                player,
+                new Array(meeplesCountByPlayer).map(() => new Meeple(player)),
+            ])
+        );
+        this.deck = countOfTiles.flatMap((count, i) =>
+            new Array(count).map(() => new Tile(tilesTypes[i]))
+        );
+    }
+
+    getCurrentPlayer() {
+        return this.players[this.round % this.players.length];
+    }
+
+    drawTile() {
+        if (this.deck.length === 0) {
+            return undefined;
+        }
+        const i = Math.floor(Math.random() * this.deck.length);
+        const tile = this.deck[i];
+        this.deck.splice(i, 1);
+        return tile;
+    }
+
+    putTile(player: Player, tile: Tile) {
+        if (player !== this.getCurrentPlayer()) {
+            throw "Wait for your turn!";
+        }
+        // todo put tile on field
+        this.round++;
+    }
+}
+
 class Table {
     id: TableId;
     players: Set<Player>;
+    game?: Game;
 
     constructor() {
         this.id = "T" + newId();
         this.players = new Set();
+    }
+
+    startGame() {
+        this.game = new Game([...this.players]);
+        return this.game;
     }
 }
 
@@ -51,30 +127,32 @@ const init = (log: (message: string) => void) => {
     const notifyPlayer = (
         notify: Player,
         about: Player,
-        action: z.infer<typeof OutActions>
+        action: z.infer<typeof OutActions>,
+        tile?: Tile
     ) => {
+        // todo tile
         const message = JSON.stringify({
             action,
             playerId: about.id,
         });
         notify.socket.send(message);
-        log(`To ${fb(notify.id)}:\n${fc(message)}`);
+        log(`To ${fb(notify.id)} by ${fb(about.id)}:\n${fc(message)}`);
     };
 
     const leaveTable = (player: Player) => {
         const table = player.table;
-        if (table) {
-            player.table = undefined;
-            table.players.delete(player);
-            table.players.forEach((toNotify) =>
-                notifyPlayer(toNotify, player, outActions.PLAYER_LEFT)
-            );
-            if (table.players.size === 0) {
-                removeTable(table);
-            }
-            return table;
+        if (!table) {
+            throw new Error("The player has no table to leave");
         }
-        return undefined;
+        player.table = undefined;
+        table.players.delete(player);
+        table.players.forEach((toNotify) =>
+            notifyPlayer(toNotify, player, outActions.PLAYER_LEFT)
+        );
+        if (table.players.size === 0) {
+            removeTable(table);
+        }
+        return table;
     };
 
     const removePlayer = (player: Player) => {
@@ -97,6 +175,54 @@ const init = (log: (message: string) => void) => {
         tables.set(table.id, table);
         joinTable(player, table);
         return table;
+    };
+
+    const sendTile = (tile: Tile, to: Player) => {
+        const message = {
+            action: outActions.DRAW_TILE,
+            tileType: tile.type.id,
+        };
+        to.socket.send(JSON.stringify(message));
+    };
+
+    const endGame = () => {
+        //todo
+    };
+
+    const startGame = (player: Player) => {
+        const table = player.table;
+        if (!table) {
+            throw new Error("The player has no table to start game on");
+        }
+        const game = table.startGame();
+        const tile = game.drawTile();
+        if (!tile) {
+            endGame();
+            return;
+        }
+        sendTile(tile, game.getCurrentPlayer());
+        return;
+    };
+
+    const putTile = (player: Player, tile: Tile) => {
+        const table = player.table;
+        if (!table) {
+            throw new Error("The player has no table put tile on");
+        }
+        const game = table.game;
+        if (!game) {
+            throw new Error("Start game firtly");
+        }
+        game.putTile(player, tile);
+        table.players.forEach((toNotify) =>
+            notifyPlayer(toNotify, player, outActions.PUT_TILE, tile)
+        );
+        const nextTile = game.drawTile();
+        if (!nextTile) {
+            endGame();
+            return;
+        }
+        sendTile(nextTile, game.getCurrentPlayer());
     };
 
     const processMessage = (message: string, player: Player) => {
@@ -137,15 +263,19 @@ const init = (log: (message: string) => void) => {
 
             if (action === inActions.LEAVE_TABLE) {
                 const table = leaveTable(player);
-                if (table) {
-                    return {
-                        action: outActions.LEAVE_TABLE_SUCCESS,
-                        tableId: table.id,
-                    };
-                }
                 return {
-                    action: outActions.LEAVE_TABLE_FAILURE,
+                    action: outActions.LEAVE_TABLE_SUCCESS,
+                    tableId: table.id,
                 };
+            }
+
+            if (action === inActions.START_GAME) {
+                startGame(player);
+            }
+
+            if (action === inActions.PUT_TILE) {
+                // todo get tile from message
+                putTile(player, new Tile(tilesTypes[0]));
             }
 
             throw `No action handler ${action}`;

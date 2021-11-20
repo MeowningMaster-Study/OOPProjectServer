@@ -5,6 +5,8 @@ export const InActions = z.enum([
     "CREATE_TABLE",
     "JOIN_TABLE",
     "LEAVE_TABLE",
+    "START_GAME",
+    "PUT_TILE",
 ]);
 
 export const OutActions = z.enum([
@@ -15,8 +17,11 @@ export const OutActions = z.enum([
     "JOIN_TABLE_SUCCESS",
     "JOIN_TABLE_FAILURE",
     "LEAVE_TABLE_SUCCESS",
-    "LEAVE_TABLE_FAILURE",
     "ERROR",
+    "GAME_STARTED",
+    "GAME_ENDED",
+    "DRAW_TILE",
+    "PUT_TILE",
 ]);
 
 export const inActions = InActions.enum;

@@ -1,4 +1,4 @@
-enum IdType {
+enum PlaceType {
     None,
     Road,
     Town,
@@ -6,25 +6,26 @@ enum IdType {
     Monastery,
 }
 
-export const getIdType = (id: number) => {
-    if (id === 0) {
-        return IdType.None;
+export const getPlaceType = (placeId: number) => {
+    if (placeId === 0) {
+        return PlaceType.None;
     }
-    if (id >= 1 && id <= 4) {
-        return IdType.Road;
+    if (placeId >= 1 && placeId <= 4) {
+        return PlaceType.Road;
     }
-    if (id >= 5 && id <= 8) {
-        return IdType.Town;
+    if (placeId >= 5 && placeId <= 8) {
+        return PlaceType.Town;
     }
-    if (id >= 9 && id <= 12) {
-        return IdType.Field;
+    if (placeId >= 9 && placeId <= 12) {
+        return PlaceType.Field;
     }
-    if (id === 13) {
-        return IdType.Monastery;
+    if (placeId === 13) {
+        return PlaceType.Monastery;
     }
 };
 
 export type TileType = {
+    id: number;
     sides: number[];
     halves: number[];
     monastery: boolean;
