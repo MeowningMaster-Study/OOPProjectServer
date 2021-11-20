@@ -203,6 +203,9 @@ const init = (log: (message: string) => void) => {
             throw new Error("The player has no table to start game on");
         }
         const game = table.startGame();
+        table.players.forEach((toNotify) =>
+            notifyPlayer(toNotify, outActions.GAME_STARTED)
+        );
         const tile = game.drawTile();
         if (!tile) {
             endGame(table);
