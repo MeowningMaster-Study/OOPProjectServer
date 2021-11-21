@@ -1,4 +1,4 @@
-enum PlaceType {
+export enum PlaceType {
     None,
     Road,
     Town,
@@ -22,6 +22,7 @@ export const getPlaceType = (placeId: number) => {
     if (placeId === 13) {
         return PlaceType.Monastery;
     }
+    throw new Error("Incorrect meeple place type");
 };
 
 export type TileType = {

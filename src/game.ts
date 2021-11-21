@@ -2,8 +2,12 @@ import { formatCode as fc, formatBold as fb } from "./telegram/index.ts";
 import newId from "./idGenerator.ts";
 import { z, ZodError } from "https://deno.land/x/zod@v3.11.6/mod.ts";
 import { InActions, OutActions, inActions, outActions } from "./gameActions.ts";
-import { TileType } from "./tilesTypes/tileType.ts";
-import { tilesTypes, countOfTiles } from "./tilesTypes/tilesTypes.ts";
+import { TileType, getPlaceType, PlaceType } from "./tilesTypes/tileType.ts";
+import {
+    tilesTypes,
+    countOfTiles,
+    firstTileType,
+} from "./tilesTypes/tilesTypes.ts";
 
 export type PlayerId = string;
 type TableId = string;
@@ -20,9 +24,10 @@ export class Player {
 }
 
 class Tile {
-    position?: [number, number];
+    position?: { x: number; y: number };
     type: TileType;
     rotation = 0;
+    meeple?: Meeple;
 
     constructor(type: TileType) {
         this.type = type;
@@ -40,13 +45,15 @@ class Meeple {
     }
 }
 
-const maxFieldSize = 72 * 2;
+const maxFieldHalfSize = 72;
+const maxFieldSize = maxFieldHalfSize * 2;
 class Game {
     round = 0;
     players: Player[];
     field: (Tile | undefined)[][];
     deck: Tile[];
     meeples: Map<Player, Meeple[]>;
+    currentTile: Tile;
 
     constructor(players: Player[]) {
         this.players = players;
@@ -65,6 +72,10 @@ class Game {
         this.deck = countOfTiles.flatMap((count, i) =>
             Array.from({ length: count }, () => new Tile(tilesTypes[i]))
         );
+        this.currentTile = new Tile(firstTileType);
+        this.currentTile.position = { x: 0, y: 0 };
+        this.field[0][0] = this.currentTile;
+        this.drawTile();
     }
 
     getCurrentPlayer() {
@@ -76,17 +87,56 @@ class Game {
             return undefined;
         }
         const i = Math.floor(Math.random() * this.deck.length);
-        const tile = this.deck[i];
+        this.currentTile = this.deck[i];
         this.deck.splice(i, 1);
-        return tile;
     }
 
-    putTile(player: Player, tile: Tile) {
-        if (player !== this.getCurrentPlayer()) {
-            throw "Wait for your turn!";
+    findFreeMeeple(player: Player) {
+        const meeples = this.meeples.get(player);
+        if (!meeples) {
+            throw new Error("The player has no meeples");
         }
-        // todo put tile on field
+        let i = 0;
+        for (; i < meeples.length; i++) {
+            if (!meeples[i].tile) {
+                break;
+            }
+        }
+        if (i === meeples.length) {
+            return undefined;
+        }
+        const meeple = meeples[i];
+        meeples.splice(i, 1);
+        return meeple;
+    }
+
+    putTile(player: Player, tileData: PutTileData) {
+        if (player !== this.getCurrentPlayer()) {
+            throw new Error("Wait for your turn");
+        }
+        const tile = this.currentTile;
+        if (!tile) {
+            throw new Error("No tile to put");
+        }
+        if (this.field[tileData.position.x][tileData.position.y]) {
+            throw new Error("This place on field is already taken");
+        }
+        const meeplePlace = getPlaceType(tileData.meeple);
+        if (meeplePlace !== PlaceType.None) {
+            const meeple = this.findFreeMeeple(player);
+            if (!meeple) {
+                throw new Error("The player has no free meeples");
+            }
+            meeple.placeId = tileData.meeple;
+            meeple.tile = tile;
+            tile.meeple = meeple;
+        }
+        tile.position = tileData.position;
+        tile.rotation = tileData.rotation;
+        this.field[tileData.position.x][tileData.position.y] = tile;
         this.round++;
+        this.drawTile();
+        return tile;
     }
 }
 
@@ -105,6 +155,17 @@ class Table {
         return this.game;
     }
 }
+
+const putTileDataSchema = z.object({
+    position: z.object({
+        x: z.number().int().min(-maxFieldHalfSize),
+        y: z.number().int().max(maxFieldHalfSize),
+    }),
+    rotation: z.optional(z.number().int().min(0).max(3)).default(0),
+    meeple: z.optional(z.number().int().min(0).max(13)).default(0),
+});
+
+type PutTileData = z.infer<typeof putTileDataSchema>;
 
 const init = (log: (message: string) => void) => {
     const players = new Map<PlayerId, Player>();
@@ -131,13 +192,22 @@ const init = (log: (message: string) => void) => {
         notify: Player,
         action: z.infer<typeof OutActions>,
         about?: Player,
-        tile?: Tile
+        puttedTile?: Tile
     ) => {
-        // todo tile
+        let tile;
+        if (puttedTile) {
+            tile = {
+                type: puttedTile.type.id,
+                position: puttedTile.position,
+                rotation: puttedTile.rotation,
+                meeple: puttedTile.meeple?.placeId,
+            };
+        }
         const playerId = about?.id;
         const message = JSON.stringify({
             action,
             playerId,
+            tile,
         });
         notify.socket.send(message);
         const aboutText = about ? ` by ${fb(about.id)}` : "";
@@ -206,15 +276,21 @@ const init = (log: (message: string) => void) => {
         table.players.forEach((toNotify) =>
             notifyPlayer(toNotify, outActions.GAME_STARTED)
         );
-        const tile = game.drawTile();
-        if (!tile) {
-            endGame(table);
-            return;
+        table.players.forEach((toNotify) =>
+            notifyPlayer(
+                toNotify,
+                outActions.TILE_PUTTED,
+                undefined,
+                game.field[0][0]
+            )
+        );
+        if (!game.currentTile) {
+            throw new Error("No tiles in deck on game start");
         }
-        sendTile(tile, game.getCurrentPlayer());
+        sendTile(game.currentTile, game.getCurrentPlayer());
     };
 
-    const putTile = (player: Player, tile: Tile) => {
+    const putTile = (player: Player, tileData: PutTileData) => {
         const table = player.table;
         if (!table) {
             throw new Error("The player has no table put tile on");
@@ -223,16 +299,15 @@ const init = (log: (message: string) => void) => {
         if (!game) {
             throw new Error("Start game firtly");
         }
-        game.putTile(player, tile);
+        const tile = game.putTile(player, tileData);
         table.players.forEach((toNotify) =>
             notifyPlayer(toNotify, outActions.TILE_PUTTED, player, tile)
         );
-        const nextTile = game.drawTile();
-        if (!nextTile) {
+        if (!game.currentTile) {
             endGame(table);
             return;
         }
-        sendTile(nextTile, game.getCurrentPlayer());
+        sendTile(game.currentTile, game.getCurrentPlayer());
     };
 
     const processMessage = (message: string, player: Player) => {
@@ -290,8 +365,8 @@ const init = (log: (message: string) => void) => {
             }
 
             if (action === inActions.PUT_TILE) {
-                // todo get tile from message
-                putTile(player, new Tile(tilesTypes[0]));
+                const putTileData = putTileDataSchema.parse(object);
+                putTile(player, putTileData);
                 return {
                     action: outActions.NONE,
                 };
