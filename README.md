@@ -3,33 +3,33 @@ Carcassonne
 
 # In actions
 ## PING
-```json
+```jsonc
 { "action": "PING" }
 ```
 ## CREATE_TABLE
-```json
+```jsonc
 { "action": "CREATE_TABLE" }
 ```
 ## JOIN_TABLE
-```json
+```jsonc
 {
     "action": "JOIN_TABLE",
     "tableId": "TTEST"
 }
 ```
 ## LEAVE_TABLE
-```json
+```jsonc
 {
     "action": "LEAVE_TABLE",
     "tableId": "TTEST"
 }
 ```
 ## START_GAME
-```json
+```jsonc
 { "action": "START_GAME" }
 ```
 ## PUT_TILE
-```json
+```jsonc
 {
     "action": "PUT_TILE",
     "position": { "x": 3, "y": 5 },
@@ -39,32 +39,32 @@ Carcassonne
 ```
 # Out actions
 ## PONG
-```json
+```jsonc
 { "action": "PONG" }
 ```
 ## PLAYER_JOINED
-```json
+```jsonc
 {
     "action":"PLAYER_JOINED",
     "playerId":"PFVWXP"
 }
 ```
 ## PLAYER_LEFT
-```json
+```jsonc
 {
     "action":"PLAYER_LEFT",
     "playerId":"PFVWXP"
 }
 ```
 ## CREATE_TABLE_SUCCESS
-```json
+```jsonc
 {
     "action":"CREATE_TABLE_SUCCESS",
     "tableId":"TL081A"
 }
 ```
 ## JOIN_TABLE_SUCCESS
-```json
+```jsonc
 {
     "action":"JOIN_TABLE_SUCCESS",
     "tableId":"TTEST",
@@ -72,21 +72,21 @@ Carcassonne
 }
 ```
 ## JOIN_TABLE_FAILURE
-```json
+```jsonc
 {
     "action":"JOIN_TABLE_FAILURE",
     "tableId":"TNONE"
 }
 ```
 ## LEAVE_TABLE_SUCCESS
-```json
+```jsonc
 {
     "action":"JOIN_TABLE_FAILURE",
     "tableId":"TNONE"
 }
 ```
 ## ERROR
-```json
+```jsonc
 {
     "action": "ERROR",
     "description": {
@@ -97,25 +97,25 @@ Carcassonne
 }
 ```
 ## GAME_STARTED
-```json
+```jsonc
 {"action":"GAME_STARTED"}
 ```
 ## GAME_ENDED
-```json
+```jsonc
 {
     "action":"GAME_ENDED"
     // TODO, ещё будут очки игроков
 }
 ```
 ## TILE_DRAWN
-```json
+```jsonc
 {
     "action": "TILE_DRAWN",
     "tileType": 21
 }
 ```
 ## TILE_PUTTED
-```json
+```jsonc
 {
     "action": "TILE_PUTTED",
     "tile": {
