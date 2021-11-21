@@ -39,14 +39,13 @@ const init = async (port: number, log: (message: string) => void) => {
         const data = ev.data;
         const result = game.processMessage(data, player);
 
-        if (result.action === outActions.PONG) {
-            return;
-        }
-
         let responseText = "";
         if (result.action !== outActions.NONE) {
             const stringResult = JSON.stringify(result);
             ws.send(stringResult);
+            if (result.action === outActions.PONG) {
+                return;
+            }
             responseText = "\nResponse:\n" + fc(stringResult);
         }
         log(`${fb(player.id)}:\n` + fc(data) + responseText);
