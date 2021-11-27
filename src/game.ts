@@ -191,26 +191,26 @@ const init = (log: (message: string) => void) => {
     const notifyPlayer = (
         notify: Player,
         action: z.infer<typeof OutActions>,
-        about?: Player,
-        puttedTile?: Tile
+        options?: { about?: Player; tile?: Tile; raw?: Record<string, unknown> }
     ) => {
         let tile;
-        if (puttedTile) {
+        if (options?.tile) {
             tile = {
-                type: puttedTile.type.id,
-                position: puttedTile.position,
-                rotation: puttedTile.rotation,
-                meeple: puttedTile.meeple?.placeId,
+                type: options.tile.type.id,
+                position: options.tile.position,
+                rotation: options.tile.rotation,
+                meeple: options.tile.meeple?.placeId,
             };
         }
-        const playerId = about?.id;
+        const playerId = options?.about?.id;
         const message = JSON.stringify({
             action,
             playerId,
             tile,
+            ...options?.raw,
         });
         notify.socket.send(message);
-        const aboutText = about ? ` by ${fb(about.id)}` : "";
+        const aboutText = options?.about ? ` by ${fb(options?.about.id)}` : "";
         log(`To ${fb(notify.id)}${aboutText}:\n${fc(message)}`);
     };
 
@@ -222,7 +222,7 @@ const init = (log: (message: string) => void) => {
         player.table = undefined;
         table.players.delete(player);
         table.players.forEach((toNotify) =>
-            notifyPlayer(toNotify, outActions.PLAYER_LEFT, player)
+            notifyPlayer(toNotify, outActions.PLAYER_LEFT, { about: player })
         );
         if (table.players.size === 0) {
             removeTable(table);
@@ -240,7 +240,7 @@ const init = (log: (message: string) => void) => {
         leaveTable(player);
         player.table = table;
         table.players.forEach((toNotify) =>
-            notifyPlayer(toNotify, outActions.PLAYER_JOINED, player)
+            notifyPlayer(toNotify, outActions.PLAYER_JOINED, { about: player })
         );
         table.players.add(player);
     };
@@ -274,15 +274,14 @@ const init = (log: (message: string) => void) => {
         }
         const game = table.startGame();
         table.players.forEach((toNotify) =>
-            notifyPlayer(toNotify, outActions.GAME_STARTED)
+            notifyPlayer(toNotify, outActions.GAME_STARTED, {
+                raw: { tiles: 72 },
+            })
         );
         table.players.forEach((toNotify) =>
-            notifyPlayer(
-                toNotify,
-                outActions.TILE_PUTTED,
-                undefined,
-                game.field[0][0]
-            )
+            notifyPlayer(toNotify, outActions.TILE_PUTTED, {
+                tile: game.field[0][0],
+            })
         );
         if (!game.currentTile) {
             throw new Error("No tiles in deck on game start");
@@ -301,7 +300,10 @@ const init = (log: (message: string) => void) => {
         }
         const tile = game.putTile(player, tileData);
         table.players.forEach((toNotify) =>
-            notifyPlayer(toNotify, outActions.TILE_PUTTED, player, tile)
+            notifyPlayer(toNotify, outActions.TILE_PUTTED, {
+                about: player,
+                tile,
+            })
         );
         if (!game.currentTile) {
             endGame(table);
