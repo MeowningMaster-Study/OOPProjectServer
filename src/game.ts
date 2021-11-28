@@ -208,7 +208,7 @@ const init = (log: (message: string) => void) => {
         let tile;
         if (options?.tile) {
             tile = {
-                type: options.tile.type.id,
+                type: options.tile.type.id + 1,
                 position: options.tile.position,
                 rotation: options.tile.rotation,
                 meeple: options.tile.meeple?.placeId ?? 0,
