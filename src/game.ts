@@ -158,8 +158,8 @@ class Table {
 
 const putTileDataSchema = z.object({
     position: z.object({
-        x: z.number().int().min(-maxFieldHalfSize),
-        y: z.number().int().max(maxFieldHalfSize),
+        x: z.number().int().min(-maxFieldHalfSize).max(maxFieldHalfSize),
+        y: z.number().int().min(-maxFieldHalfSize).max(maxFieldHalfSize),
     }),
     rotation: z.optional(z.number().int().min(0).max(3)).default(0),
     meeple: z.optional(z.number().int().min(0).max(13)).default(0),
