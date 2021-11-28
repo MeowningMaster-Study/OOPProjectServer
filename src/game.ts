@@ -265,6 +265,7 @@ const init = (log: (message: string) => void) => {
         table.players.forEach((toNotify) =>
             notifyPlayer(toNotify, outActions.TILE_DRAWN, { raw: { tileType } })
         );
+        log(`${fb(to.id)} drawn tile: ${tileType}`);
     };
 
     const endGame = (table: Table) => {
