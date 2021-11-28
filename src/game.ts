@@ -74,8 +74,16 @@ class Game {
         );
         this.currentTile = new Tile(firstTileType);
         this.currentTile.position = { x: 0, y: 0 };
-        this.field[0][0] = this.currentTile;
+        this.setTile(0, 0, this.currentTile);
         this.drawTile();
+    }
+
+    getTile(x: number, y: number) {
+        return this.field[x + maxFieldHalfSize][y + maxFieldHalfSize];
+    }
+
+    setTile(x: number, y: number, tile: Tile) {
+        this.field[x + maxFieldHalfSize][y + maxFieldHalfSize] = tile;
     }
 
     getCurrentPlayer() {
@@ -118,7 +126,7 @@ class Game {
         if (!tile) {
             throw new Error("No tile to put");
         }
-        if (this.field[tileData.position.x][tileData.position.y]) {
+        if (this.getTile(tileData.position.x, tileData.position.y)) {
             throw new Error("This place on field is already taken");
         }
         const meeplePlace = getPlaceType(tileData.meeple);
@@ -133,7 +141,7 @@ class Game {
         }
         tile.position = tileData.position;
         tile.rotation = tileData.rotation;
-        this.field[tileData.position.x][tileData.position.y] = tile;
+        this.setTile(tileData.position.x, tileData.position.y, tile);
         this.round++;
         this.drawTile();
         return tile;
@@ -288,7 +296,7 @@ const init = (log: (message: string) => void) => {
         );
         table.players.forEach((toNotify) =>
             notifyPlayer(toNotify, outActions.TILE_PUTTED, {
-                tile: game.field[0][0],
+                tile: game.getTile(0, 0),
             })
         );
         if (!game.currentTile) {
