@@ -191,15 +191,19 @@ const init = (log: (message: string) => void) => {
     const notifyPlayer = (
         notify: Player,
         action: z.infer<typeof OutActions>,
-        options?: { about?: Player; tile?: Tile; raw?: Record<string, unknown> }
+        options?: {
+            about?: Player;
+            tile?: Tile;
+            raw?: Record<string, unknown>;
+        }
     ) => {
         let tile;
         if (options?.tile) {
             tile = {
-                type: options.tile.type.id + 1,
+                type: options.tile.type.id,
                 position: options.tile.position,
                 rotation: options.tile.rotation,
-                meeple: options.tile.meeple?.placeId ?? -1,
+                meeple: options.tile.meeple?.placeId ?? 0,
             };
         }
         const playerId = options?.about?.id;
@@ -253,11 +257,14 @@ const init = (log: (message: string) => void) => {
     };
 
     const sendTile = (tile: Tile, to: Player) => {
-        const message = {
-            action: outActions.TILE_DRAWN,
-            tileType: tile.type.id,
-        };
-        to.socket.send(JSON.stringify(message));
+        const table = to.table;
+        if (!table) {
+            throw new Error("Player has no table");
+        }
+        const tileType = tile.type.id + 1;
+        table.players.forEach((toNotify) =>
+            notifyPlayer(toNotify, outActions.TILE_DRAWN, { raw: { tileType } })
+        );
     };
 
     const endGame = (table: Table) => {
@@ -299,12 +306,14 @@ const init = (log: (message: string) => void) => {
             throw new Error("Start game firtly");
         }
         const tile = game.putTile(player, tileData);
-        table.players.forEach((toNotify) =>
-            notifyPlayer(toNotify, outActions.TILE_PUTTED, {
-                about: player,
-                tile,
-            })
-        );
+        [...table.players]
+            .filter((x) => x != player)
+            .forEach((toNotify) =>
+                notifyPlayer(toNotify, outActions.TILE_PUTTED, {
+                    about: player,
+                    tile,
+                })
+            );
         if (!game.currentTile) {
             endGame(table);
             return;
