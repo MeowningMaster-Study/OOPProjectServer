@@ -212,11 +212,18 @@ const init = (log: (message: string) => void) => {
         if (options?.tile) {
             tile = {
                 type: options.tile.type.id + 1,
-                position: options.tile.position,
-                rotation: options.tile.rotation,
-                meeple: options.tile.meeple?.placeId ?? 0,
                 seed: options.tile.seed,
             };
+            if (action !== outActions.TILE_DRAWN) {
+                tile = {
+                    ...tile,
+                    ...{
+                        position: options.tile.position,
+                        rotation: options.tile.rotation,
+                        meeple: options.tile.meeple?.placeId ?? 0,
+                    },
+                };
+            }
         }
         const playerId = options?.about?.id;
         const message = JSON.stringify({
