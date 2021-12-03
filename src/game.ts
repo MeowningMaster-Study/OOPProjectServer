@@ -1,5 +1,6 @@
 import { formatCode as fc, formatBold as fb } from "./telegram/index.ts";
 import newId from "./idGenerator.ts";
+import { getRandomIntInclusive } from "./utils.ts";
 import { z, ZodError } from "https://deno.land/x/zod@v3.11.6/mod.ts";
 import { InActions, OutActions, inActions, outActions } from "./gameActions.ts";
 import { TileType, getPlaceType, PlaceType } from "./tilesTypes/tileType.ts";
@@ -28,9 +29,11 @@ class Tile {
     type: TileType;
     rotation = 0;
     meeple?: Meeple;
+    seed: number;
 
     constructor(type: TileType) {
         this.type = type;
+        this.seed = getRandomIntInclusive(-2_147_483_648, 2_147_483_647);
     }
 }
 
@@ -212,6 +215,7 @@ const init = (log: (message: string) => void) => {
                 position: options.tile.position,
                 rotation: options.tile.rotation,
                 meeple: options.tile.meeple?.placeId ?? 0,
+                seed: options.tile.seed,
             };
         }
         const playerId = options?.about?.id;
@@ -269,11 +273,10 @@ const init = (log: (message: string) => void) => {
         if (!table) {
             throw new Error("Player has no table");
         }
-        const tileType = tile.type.id + 1;
         table.players.forEach((toNotify) =>
-            notifyPlayer(toNotify, outActions.TILE_DRAWN, { raw: { tileType } })
+            notifyPlayer(toNotify, outActions.TILE_DRAWN, { tile })
         );
-        log(`${fb(to.id)} drawn tile: ${tileType}`);
+        log(`${fb(to.id)} drawn tile ${tile.type.id + 1}, seed ${tile.seed}`);
     };
 
     const endGame = (table: Table) => {
