@@ -1,12 +1,19 @@
 {
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "type": "deno",
-      "command": "run",
-      "problemMatcher": ["$deno"],
-      "args": ["-A", "src/main.ts"],
-      "label": "deno: run"
-    }
-  ]
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "deno",
+            "command": "run",
+            "problemMatcher": ["$deno"],
+            "args": ["-A", "src/main.ts"],
+            "label": "deno: run"
+        },
+        {
+            "type": "deno",
+            "command": "run",
+            "problemMatcher": ["$deno"],
+            "args": ["-A", "--watch", "src/main.ts"],
+            "label": "deno: watch"
+        }
+    ]
 }
