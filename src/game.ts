@@ -1,6 +1,6 @@
 import { formatCode as fc, formatBold as fb } from "./telegram/index.ts";
 import newId from "./idGenerator.ts";
-import { getRandomIntInclusive } from "./utils.ts";
+import { getRandomInt } from "./utils.ts";
 import { z, ZodError } from "https://deno.land/x/zod@v3.11.6/mod.ts";
 import { InActions, OutActions, inActions, outActions } from "./gameActions.ts";
 import { TileType, getPlaceType, PlaceType } from "./tilesTypes/tileType.ts";
@@ -33,7 +33,7 @@ class Tile {
 
     constructor(type: TileType) {
         this.type = type;
-        this.seed = getRandomIntInclusive(-2_147_483_648, 2_147_483_647);
+        this.seed = getRandomInt(-2_147_483_648, 2_147_483_647);
     }
 }
 
