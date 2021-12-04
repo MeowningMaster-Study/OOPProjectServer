@@ -46,9 +46,9 @@ const init = async (port: number, log: (message: string) => void) => {
             if (result.action === outActions.PONG) {
                 return;
             }
-            responseText = "\nResponse:\n" + fc(stringResult);
+            responseText = `\nResponse:\n${fc(stringResult)}`;
         }
-        log(`${fb(player.id)}:\n` + fc(data) + responseText);
+        log(`${fb(player.id)}:\n${fc(data)}${responseText}`);
     };
 
     const listener = Deno.listen({ port });
