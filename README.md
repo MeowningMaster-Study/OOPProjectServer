@@ -111,7 +111,8 @@ Carcassonne
 ```jsonc
 {
     "action": "TILE_DRAWN",
-    "tileType": 21
+    "tileType": 21, // starting from 1
+    "seed": -947640883 // tile seed for front
 }
 ```
 ## TILE_PUTTED
@@ -119,13 +120,14 @@ Carcassonne
 {
     "action": "TILE_PUTTED",
     "tile": {
-        "type": 19,
+        "type": 19, // starting from 1
         "position": {
             "x": 0,
             "y": 0
         },
         "rotation": 0,
         "meeple": 5 // id позиции крестьянина если он поставлен, иначе 0
-    }
+    },
+    "seed": -947640883 // tile seed for front
 }
 ```
