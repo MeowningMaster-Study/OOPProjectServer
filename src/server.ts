@@ -1,15 +1,16 @@
 import { formatCode as fc, formatBold as fb } from "./telegram/index.ts";
-import newGame, { Player } from "./game.ts";
+import { Player } from "./game.ts";
+import eventHandler from "./eventHandler.ts";
 import { outActions } from "./gameActions.ts";
 
 const init = async (port: number, log: (message: string) => void) => {
     const players = new Map<WebSocket, Player>();
-    const game = newGame(log);
+    const handler = eventHandler(log);
 
     const onOpen = (ws: WebSocket, _ev: Event) => {
         const player = new Player(ws);
         players.set(ws, player);
-        game.addPlayer(player);
+        handler.addPlayer(player);
     };
 
     const onClose = (ws: WebSocket, _ev: CloseEvent) => {
@@ -19,7 +20,7 @@ const init = async (port: number, log: (message: string) => void) => {
             return;
         }
         players.delete(ws);
-        game.removePlayer(player);
+        handler.removePlayer(player);
     };
 
     const onError = (ws: WebSocket, ev: Event | ErrorEvent) => {
@@ -37,7 +38,7 @@ const init = async (port: number, log: (message: string) => void) => {
             return;
         }
         const data = ev.data;
-        const result = game.processMessage(data, player);
+        const result = handler.processMessage(data, player);
 
         let responseText = "";
         if (result.action !== outActions.NONE) {
