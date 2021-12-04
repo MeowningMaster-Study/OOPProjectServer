@@ -1,5 +1,4 @@
-import newId from "./idGenerator.ts";
-import { getRandomInt } from "./utils.ts";
+import { getRandomInt, newId } from "./utils.ts";
 import { TileType, getPlaceType, PlaceType } from "./tilesTypes/tileType.ts";
 import {
     tilesTypes,
