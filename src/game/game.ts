@@ -130,7 +130,8 @@ export class Game {
         tile.position = tileData.position;
         tile.rotation = tileData.rotation;
         this.checkConsistency(tile);
-        this.field.set(tileData.position.x, tileData.position.y, tile);
+        this.field.set(tile.position.x, tile.position.y, tile);
+        console.log(tile);
         this.checkFinishedObjects(tile);
         this.round++;
         this.drawTile();
