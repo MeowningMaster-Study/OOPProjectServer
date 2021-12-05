@@ -165,8 +165,6 @@ export class Game {
                 | PlaceType.Road;
             const checked = new Field(false);
             const tiles: { x: number; y: number }[] = [];
-            console.log(tile);
-            tiles.push({ x: tile.position.x, y: tile.position.y });
             const meeples = new Array<Meeple>();
             if (tile.meeple) {
                 meeples.push(tile.meeple);
@@ -237,7 +235,8 @@ export class Game {
                         };
                     });
 
-            checkTile(bx, by, id);
+            console.log(tile.position.x, tile.position.y, id);
+            checkTile(tile.position.x, tile.position.y, id);
             if (!fail) {
                 this.finishObject(this.table, {
                     type: placeType,
