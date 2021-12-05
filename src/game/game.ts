@@ -159,8 +159,6 @@ export class Game {
             }
         });
 
-        console.debug(placeIds);
-
         for (const id of placeIds) {
             const placeType = getPlaceType(id) as
                 | PlaceType.Town
@@ -179,6 +177,7 @@ export class Game {
                 if (fail) return;
                 if (checked.get(x, y)) return;
                 checked.set(x, y, true);
+                console.debug({ x, y });
                 for (let i = 0; i < sides.length; i += 1) {
                     if (sides[i] === id) {
                         const { x: ox, y: oy } = Tile.getSideOffset(i);
