@@ -39,7 +39,7 @@ This section shows a list of incoming and outgoing messages with examples
 {
     "action": "PUT_TILE",
     "position": { "x": 3, "y": 5 },
-    "rotation": 1, // default 0
+    "rotation": 1, // clockwise, default 0
     "meeple": 13 // default 0 = NONE
 }
 ```
@@ -131,8 +131,8 @@ This section shows a list of incoming and outgoing messages with examples
             "x": 0,
             "y": 0
         },
-        "rotation": 0,
-        "meeple": 5 // id позиции крестьянина если он поставлен, иначе 0
+        "rotation": 0, // clockwise
+        "meeple": 5 // meeple place, else 0
     },
     "seed": -947640883 // tile seed for front
 }
