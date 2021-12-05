@@ -1,34 +1,40 @@
-# OOPProjectServer
-Carcassonne
+# Carcassonne server
+- [Actions](#actions)
+  - [Incoming](#in-actions)
+  - [Outgoing](#out-actions)
+- [Tile structure](src/gameObjects/tile/index.md)
 
-# In actions
-## PING
+# Actions
+This section shows a list of incoming and outgoing messages with examples
+
+## In actions
+### PING
 ```jsonc
 { "action": "PING" }
 ```
-## CREATE_TABLE
+### CREATE_TABLE
 ```jsonc
 { "action": "CREATE_TABLE" }
 ```
-## JOIN_TABLE
+### JOIN_TABLE
 ```jsonc
 {
     "action": "JOIN_TABLE",
     "tableId": "TTEST"
 }
 ```
-## LEAVE_TABLE
+### LEAVE_TABLE
 ```jsonc
 {
     "action": "LEAVE_TABLE",
     "tableId": "TTEST"
 }
 ```
-## START_GAME
+### START_GAME
 ```jsonc
 { "action": "START_GAME" }
 ```
-## PUT_TILE
+### PUT_TILE
 ```jsonc
 {
     "action": "PUT_TILE",
@@ -37,33 +43,33 @@ Carcassonne
     "meeple": 13 // default 0 = NONE
 }
 ```
-# Out actions
-## PONG
+## Out actions
+### PONG
 ```jsonc
 { "action": "PONG" }
 ```
-## PLAYER_JOINED
+### PLAYER_JOINED
 ```jsonc
 {
     "action":"PLAYER_JOINED",
     "playerId":"PFVWXP"
 }
 ```
-## PLAYER_LEFT
+### PLAYER_LEFT
 ```jsonc
 {
     "action":"PLAYER_LEFT",
     "playerId":"PFVWXP"
 }
 ```
-## CREATE_TABLE_SUCCESS
+### CREATE_TABLE_SUCCESS
 ```jsonc
 {
     "action":"CREATE_TABLE_SUCCESS",
     "tableId":"TL081A"
 }
 ```
-## JOIN_TABLE_SUCCESS
+### JOIN_TABLE_SUCCESS
 ```jsonc
 {
     "action":"JOIN_TABLE_SUCCESS",
@@ -71,21 +77,21 @@ Carcassonne
     "players":["PHE8VU","PD5HDB"]
 }
 ```
-## JOIN_TABLE_FAILURE
+### JOIN_TABLE_FAILURE
 ```jsonc
 {
     "action":"JOIN_TABLE_FAILURE",
     "tableId":"TNONE"
 }
 ```
-## LEAVE_TABLE_SUCCESS
+### LEAVE_TABLE_SUCCESS
 ```jsonc
 {
     "action":"JOIN_TABLE_FAILURE",
     "tableId":"TNONE"
 }
 ```
-## ERROR
+### ERROR
 ```jsonc
 {
     "action": "ERROR",
@@ -96,18 +102,18 @@ Carcassonne
     }
 }
 ```
-## GAME_STARTED
+### GAME_STARTED
 ```jsonc
 {"action":"GAME_STARTED"}
 ```
-## GAME_ENDED
+### GAME_ENDED
 ```jsonc
 {
     "action":"GAME_ENDED"
     // TODO, ещё будут очки игроков
 }
 ```
-## TILE_DRAWN
+### TILE_DRAWN
 ```jsonc
 {
     "action": "TILE_DRAWN",
@@ -115,7 +121,7 @@ Carcassonne
     "seed": -947640883 // tile seed for front
 }
 ```
-## TILE_PUTTED
+### TILE_PUTTED
 ```jsonc
 {
     "action": "TILE_PUTTED",
