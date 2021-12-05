@@ -108,8 +108,8 @@ const init = (log: (message: string) => void) => {
         table.players.add(player);
     };
 
-    const addTable = (player: Player) => {
-        const table = new Table();
+    const addTable = (player: Player, name?: string) => {
+        const table = new Table(name);
         tables.set(table.id, table);
         joinTable(player, table);
         return table;
@@ -219,7 +219,12 @@ const init = (log: (message: string) => void) => {
             }
 
             if (action === inActions.CREATE_TABLE) {
-                const table = addTable(player);
+                const object = JSON.parse(message);
+                const tableSchema = z.object({
+                    tableName: z.string().optional(),
+                });
+                const { tableName } = tableSchema.parse(object);
+                const table = addTable(player, tableName);
                 return {
                     action: outActions.CREATE_TABLE_SUCCESS,
                     tableId: table.id,
@@ -235,6 +240,7 @@ const init = (log: (message: string) => void) => {
                     return {
                         action: outActions.JOIN_TABLE_SUCCESS,
                         tableId,
+                        tableName: table.name,
                         players: [...table.players].map((player) => player.id),
                     };
                 }

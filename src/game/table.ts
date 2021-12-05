@@ -6,11 +6,13 @@ export type TableId = string;
 
 export class Table {
     id: TableId;
+    name: string;
     players: Set<Player>;
     game?: Game;
 
-    constructor() {
+    constructor(name?: string) {
         this.id = "T" + newId();
+        this.name = name ?? this.id;
         this.players = new Set();
     }
 
