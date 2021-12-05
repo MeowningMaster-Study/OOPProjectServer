@@ -165,7 +165,7 @@ export class Game {
                 | PlaceType.Road;
             const checked = new Field(false);
             const tiles: { x: number; y: number }[] = [
-                { x: tile.position.x, y: tile.position.y },
+                //{ x: tile.position.x, y: tile.position.y },
             ];
             const meeples = new Array<Meeple>();
             if (tile.meeple) {
