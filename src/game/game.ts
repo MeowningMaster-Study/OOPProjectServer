@@ -131,7 +131,6 @@ export class Game {
         tile.rotation = tileData.rotation;
         this.checkConsistency(tile);
         this.field.set(tile.position.x, tile.position.y, tile);
-        console.log(tile);
         this.checkFinishedObjects(tile);
         this.round++;
         this.drawTile();
@@ -166,6 +165,7 @@ export class Game {
                 | PlaceType.Road;
             const checked = new Field(false);
             const tiles: { x: number; y: number }[] = [];
+            console.log(tile);
             tiles.push({ x: tile.position.x, y: tile.position.y });
             const meeples = new Array<Meeple>();
             if (tile.meeple) {
