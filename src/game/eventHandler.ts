@@ -4,7 +4,7 @@ import { InActions, OutActions, inActions, outActions } from "./actions.ts";
 import { Player, PlayerId } from "./player.ts";
 import { Table, TableId } from "./table.ts";
 import { Tile } from "./tile/index.ts";
-import { fieldSizeHalf } from "./game.ts";
+import { fieldSizeHalf } from "./field.ts";
 
 const putTileDataSchema = z.object({
     position: z.object({
@@ -145,7 +145,7 @@ const init = (log: (message: string) => void) => {
         );
         table.players.forEach((toNotify) =>
             notifyPlayer(toNotify, outActions.TILE_PUTTED, {
-                tile: game.getTile(0, 0),
+                tile: game.field.get(0, 0),
             })
         );
         if (!game.currentTile) {

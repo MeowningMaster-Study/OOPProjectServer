@@ -1,24 +1,30 @@
-import { Player } from "./player.ts";
+import { Player, PlayerId } from "./player.ts";
 import { Tile, getPlaceType, PlaceType } from "./tile/index.ts";
 import { tilesTypes, countOfTiles, startingTileType } from "./tile/types.ts";
 import { Meeple, playerMeeplesCount } from "./meeple.ts";
+import { Field } from "./field.ts";
 import { PutTileData } from "./eventHandler.ts";
 
-export const fieldSizeHalf = 72;
-export const fieldSize = fieldSizeHalf * 2;
+export type FinishedObject = {
+    type: PlaceType.Road | PlaceType.Town | PlaceType.Monastery;
+    tiles: { x: number; y: number }[];
+    // meeples: number[]; // meples count per player
+    scores: { playerId: PlayerId; amount: number }[]; // scores per player
+};
+
+export type FinishObjectFunc = (object: FinishedObject) => void;
+
 export class Game {
     round = 0;
     players: Player[];
-    field: (Tile | undefined)[][];
+    field: Field<Tile | undefined>;
     deck: Tile[];
     meeples: Map<Player, Meeple[]>;
     currentTile: Tile;
 
     constructor(players: Player[]) {
         this.players = players;
-        this.field = Array.from({ length: fieldSize }, () =>
-            new Array(fieldSize).fill(undefined)
-        );
+        this.field = new Field(undefined);
         this.meeples = new Map(
             players.map((player) => [
                 player,
@@ -33,16 +39,8 @@ export class Game {
         );
         this.currentTile = new Tile(startingTileType);
         this.currentTile.position = { x: 0, y: 0 };
-        this.setTile(0, 0, this.currentTile);
+        this.field.set(0, 0, this.currentTile);
         this.drawTile();
-    }
-
-    getTile(x: number, y: number) {
-        return this.field[x + fieldSizeHalf][y + fieldSizeHalf];
-    }
-
-    setTile(x: number, y: number, tile: Tile) {
-        this.field[x + fieldSizeHalf][y + fieldSizeHalf] = tile;
     }
 
     getCurrentPlayer() {
@@ -85,7 +83,7 @@ export class Game {
         if (!tile) {
             throw new Error("No tile to put");
         }
-        if (this.getTile(tileData.position.x, tileData.position.y)) {
+        if (this.field.get(tileData.position.x, tileData.position.y)) {
             throw new Error("This place on field is already taken");
         }
         const meeplePlace = getPlaceType(tileData.meeple);
@@ -100,9 +98,50 @@ export class Game {
         }
         tile.position = tileData.position;
         tile.rotation = tileData.rotation;
-        this.setTile(tileData.position.x, tileData.position.y, tile);
+        this.field.set(tileData.position.x, tileData.position.y, tile);
         this.round++;
         this.drawTile();
         return tile;
+    }
+
+    checkFinishedObjects(tile: Tile, finish: FinishObjectFunc) {
+        if (!tile.position) {
+            return;
+        }
+
+        const { x: bx, y: by } = tile.position;
+
+        for (let x = -1; x <= 1; x += 1) {
+            for (let y = -1; y <= 1; y += 1) {
+                this.checkFinishedMonastery(
+                    this.field.get(bx + x, by + y),
+                    finish
+                );
+            }
+        }
+    }
+
+    // checkFinishedSide()
+
+    checkFinishedMonastery(tile: Tile | undefined, finish: FinishObjectFunc) {
+        if (!tile || !tile.position || !tile.meeple || !tile.type.monastery) {
+            return;
+        }
+
+        const { x: bx, y: by } = tile.position;
+
+        for (let x = -1; x <= 1; x += 1) {
+            for (let y = -1; y <= 1; y += 1) {
+                if (!this.field.get(bx + x, by + y)) {
+                    return;
+                }
+            }
+        }
+
+        finish({
+            type: PlaceType.Monastery,
+            tiles: [tile.position],
+            scores: [{ playerId: tile.meeple.owner.id, amount: 9 }],
+        });
     }
 }
