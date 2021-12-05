@@ -167,7 +167,7 @@ export class Game {
                         if (!tile.position) {
                             throw new Error("No tile position");
                         }
-                        if (placeType === PlaceType.Town) {
+                        if (placeType === PlaceType.Town && oppPlaceId === 5) {
                             if (tile.type.shield) {
                                 shieldsCount += 1;
                             }
