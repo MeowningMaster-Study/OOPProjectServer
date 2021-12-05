@@ -1,4 +1,4 @@
-import { TileType } from "./tileType.ts";
+import { TileType } from "./index.ts";
 
 const tilesTypesRaw: [number[], number[], boolean, boolean][] = [
     [[0, 0, 0, 0], [9, 9, 9, 9, 9, 9, 9, 9], true, false],

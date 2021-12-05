@@ -1,19 +1,15 @@
 import { formatCode as fc, formatBold as fb } from "./telegram/index.ts";
 import { z, ZodError } from "https://deno.land/x/zod@v3.11.6/mod.ts";
 import { InActions, OutActions, inActions, outActions } from "./gameActions.ts";
-import {
-    Table,
-    TableId,
-    Player,
-    PlayerId,
-    Tile,
-    maxFieldHalfSize,
-} from "./game.ts";
+import { Player, PlayerId } from "./gameObjects/player.ts";
+import { Table, TableId } from "./gameObjects/table.ts";
+import { Tile } from "./gameObjects/tile/index.ts";
+import { fieldSizeHalf } from "./gameObjects/field.ts";
 
 const putTileDataSchema = z.object({
     position: z.object({
-        x: z.number().int().min(-maxFieldHalfSize).max(maxFieldHalfSize),
-        y: z.number().int().min(-maxFieldHalfSize).max(maxFieldHalfSize),
+        x: z.number().int().min(-fieldSizeHalf).max(fieldSizeHalf),
+        y: z.number().int().min(-fieldSizeHalf).max(fieldSizeHalf),
     }),
     rotation: z.optional(z.number().int().min(0).max(3)).default(0),
     meeple: z.optional(z.number().int().min(0).max(13)).default(0),
@@ -130,7 +126,7 @@ const init = (log: (message: string) => void) => {
     };
 
     const endGame = (table: Table) => {
-        table.game = undefined;
+        table.field = undefined;
         table.players.forEach((toNotify) =>
             notifyPlayer(toNotify, outActions.GAME_ENDED)
         );
@@ -163,11 +159,11 @@ const init = (log: (message: string) => void) => {
         if (!table) {
             throw new Error("The player has no table put tile on");
         }
-        const game = table.game;
-        if (!game) {
-            throw new Error("Start game firtly");
+        const field = table.field;
+        if (!field) {
+            throw new Error("Start game firstly");
         }
-        const tile = game.putTile(player, tileData);
+        const tile = field.putTile(player, tileData);
         [...table.players]
             .filter((x) => x != player)
             .forEach((toNotify) =>
@@ -176,11 +172,11 @@ const init = (log: (message: string) => void) => {
                     tile,
                 })
             );
-        if (!game.currentTile) {
+        if (!field.currentTile) {
             endGame(table);
             return;
         }
-        sendTile(game.currentTile, game.getCurrentPlayer());
+        sendTile(field.currentTile, field.getCurrentPlayer());
     };
 
     const processMessage = (message: string, player: Player) => {

@@ -1,53 +1,12 @@
-import { getRandomInt, newId } from "./utils.ts";
-import { TileType, getPlaceType, PlaceType } from "./tilesTypes/tileType.ts";
-import {
-    tilesTypes,
-    countOfTiles,
-    firstTileType,
-} from "./tilesTypes/tilesTypes.ts";
-import { PutTileData } from "./eventHandler.ts";
+import { Player } from "./player.ts";
+import { Tile, getPlaceType, PlaceType } from "./tile/index.ts";
+import { tilesTypes, countOfTiles, firstTileType } from "./tile/types.ts";
+import { Meeple, playerMeeplesCount } from "./meeple.ts";
+import { PutTileData } from "../eventHandler.ts";
 
-export type PlayerId = string;
-export type TableId = string;
-
-export class Player {
-    id: PlayerId;
-    socket: WebSocket;
-    table?: Table;
-
-    constructor(socket: WebSocket) {
-        this.id = "P" + newId();
-        this.socket = socket;
-    }
-}
-
-export class Tile {
-    position?: { x: number; y: number };
-    type: TileType;
-    rotation = 0;
-    meeple?: Meeple;
-    seed: number;
-
-    constructor(type: TileType) {
-        this.type = type;
-        this.seed = getRandomInt(-2_147_483_648, 2_147_483_647);
-    }
-}
-
-const meeplesCountByPlayer = 7;
-class Meeple {
-    owner: Player;
-    tile?: Tile;
-    placeId = 0;
-
-    constructor(owner: Player) {
-        this.owner = owner;
-    }
-}
-
-export const maxFieldHalfSize = 72;
-const maxFieldSize = maxFieldHalfSize * 2;
-class Game {
+export const fieldSizeHalf = 72;
+export const fieldSize = fieldSizeHalf * 2;
+export class Field {
     round = 0;
     players: Player[];
     field: (Tile | undefined)[][];
@@ -57,14 +16,14 @@ class Game {
 
     constructor(players: Player[]) {
         this.players = players;
-        this.field = Array.from({ length: maxFieldSize }, () =>
-            new Array(maxFieldSize).fill(undefined)
+        this.field = Array.from({ length: fieldSize }, () =>
+            new Array(fieldSize).fill(undefined)
         );
         this.meeples = new Map(
             players.map((player) => [
                 player,
                 Array.from(
-                    { length: meeplesCountByPlayer },
+                    { length: playerMeeplesCount },
                     () => new Meeple(player)
                 ),
             ])
@@ -79,11 +38,11 @@ class Game {
     }
 
     getTile(x: number, y: number) {
-        return this.field[x + maxFieldHalfSize][y + maxFieldHalfSize];
+        return this.field[x + fieldSizeHalf][y + fieldSizeHalf];
     }
 
     setTile(x: number, y: number, tile: Tile) {
-        this.field[x + maxFieldHalfSize][y + maxFieldHalfSize] = tile;
+        this.field[x + fieldSizeHalf][y + fieldSizeHalf] = tile;
     }
 
     getCurrentPlayer() {
@@ -145,21 +104,5 @@ class Game {
         this.round++;
         this.drawTile();
         return tile;
-    }
-}
-
-export class Table {
-    id: TableId;
-    players: Set<Player>;
-    game?: Game;
-
-    constructor() {
-        this.id = "T" + newId();
-        this.players = new Set();
-    }
-
-    startGame() {
-        this.game = new Game([...this.players]);
-        return this.game;
     }
 }

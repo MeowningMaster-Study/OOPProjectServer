@@ -1,5 +1,5 @@
 import { formatCode as fc, formatBold as fb } from "./telegram/index.ts";
-import { Player } from "./game.ts";
+import { Player } from "./gameObjects/player.ts";
 import eventHandler from "./eventHandler.ts";
 import { outActions } from "./gameActions.ts";
 
