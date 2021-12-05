@@ -148,6 +148,7 @@ export class Game {
 
             const checkTile = (x: number, y: number, id: number) => {
                 if (fail) return;
+                if (checked.get(x, y)) return;
                 checked.set(x, y, true);
                 for (let i = 0; i < sides.length; i += 1) {
                     if (sides[i] === id) {
@@ -175,9 +176,7 @@ export class Game {
                         if (tile.meeple) {
                             meeples.push(tile.meeple);
                         }
-                        if (!checked.get(bx + x, by + y)) {
-                            checkTile(bx + x, by + y, oppPlaceId);
-                        }
+                        checkTile(bx + x, by + y, oppPlaceId);
                     }
                 }
             };
@@ -203,7 +202,7 @@ export class Game {
                         return {
                             playerId: x.player.id,
                             amount:
-                                x.count *
+                                tiles.length *
                                     (placeType === PlaceType.Road ? 1 : 2) +
                                 shieldsCount * 2,
                         };
@@ -219,8 +218,6 @@ export class Game {
             }
         }
     }
-
-    //checkFinishedSide(tile: Tile, placeId: number, checked: Field<boolean>);
 
     checkFinishedMonastery(tile: Tile | undefined) {
         if (!tile || !tile.position || !tile.meeple || !tile.type.monastery) {
