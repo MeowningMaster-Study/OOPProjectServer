@@ -159,14 +159,15 @@ export class Game {
             }
         });
 
+        console.debug(placeIds);
+
         for (const id of placeIds) {
             const placeType = getPlaceType(id) as
                 | PlaceType.Town
                 | PlaceType.Road;
             const checked = new Field(false);
-            const tiles: { x: number; y: number }[] = [
-                //{ x: tile.position.x, y: tile.position.y },
-            ];
+            const tiles: { x: number; y: number }[] = [];
+            tiles.push({ x: tile.position.x, y: tile.position.y });
             const meeples = new Array<Meeple>();
             if (tile.meeple) {
                 meeples.push(tile.meeple);
@@ -183,26 +184,26 @@ export class Game {
                         const { x: ox, y: oy } = Tile.getSideOffset(i);
                         const x = bx + ox,
                             y = by + oy;
-                        const tile = this.field.get(x, y);
-                        if (!tile) {
+                        const tileToCheck = this.field.get(x, y);
+                        if (!tileToCheck) {
                             fail = true;
                             return;
                         }
                         const oppSide = Tile.getOppositeSide(i);
-                        const oppPlaceId = tile.borders.sides[oppSide];
-                        if (!tile.position) {
+                        const oppPlaceId = tileToCheck.borders.sides[oppSide];
+                        if (!tileToCheck.position) {
                             throw new Error("No tile position");
                         }
                         if (
                             placeType === PlaceType.Town &&
                             oppPlaceId === 5 &&
-                            tile.type.shield
+                            tileToCheck.type.shield
                         ) {
                             shieldsCount += 1;
                         }
                         tiles.push({ x, y });
-                        if (tile.meeple) {
-                            meeples.push(tile.meeple);
+                        if (tileToCheck.meeple) {
+                            meeples.push(tileToCheck.meeple);
                         }
                         checkTile(x, y, oppPlaceId);
                     }
