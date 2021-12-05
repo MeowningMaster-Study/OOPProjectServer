@@ -109,8 +109,17 @@ This section shows a list of incoming and outgoing messages with examples
 ### GAME_ENDED
 ```jsonc
 {
-    "action":"GAME_ENDED"
-    // TODO, ещё будут очки игроков
+    "action":"GAME_ENDED",
+    "scores": {
+        "P12345": {
+            "roads": 4,
+            "towns": 12,
+            "fields": 3,
+            "monasteries": 5,
+            "summary": 24
+        },
+        // ... for each player
+    }
 }
 ```
 ### TILE_DRAWN
