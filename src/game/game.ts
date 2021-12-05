@@ -180,8 +180,10 @@ export class Game {
                 checked.set(x, y, true);
                 for (let i = 0; i < sides.length; i += 1) {
                     if (sides[i] === id) {
-                        const { x, y } = Tile.getSideOffset(i);
-                        const tile = this.field.get(bx + x, by + y);
+                        const { x: ox, y: oy } = Tile.getSideOffset(i);
+                        const x = bx + ox,
+                            y = by + oy;
+                        const tile = this.field.get(x, y);
                         if (!tile) {
                             fail = true;
                             return;
@@ -191,16 +193,18 @@ export class Game {
                         if (!tile.position) {
                             throw new Error("No tile position");
                         }
-                        if (placeType === PlaceType.Town && oppPlaceId === 5) {
-                            if (tile.type.shield) {
-                                shieldsCount += 1;
-                            }
+                        if (
+                            placeType === PlaceType.Town &&
+                            oppPlaceId === 5 &&
+                            tile.type.shield
+                        ) {
+                            shieldsCount += 1;
                         }
-                        tiles.push({ x: tile.position.x, y: tile.position.y });
+                        tiles.push({ x, y });
                         if (tile.meeple) {
                             meeples.push(tile.meeple);
                         }
-                        checkTile(bx + x, by + y, oppPlaceId);
+                        checkTile(x, y, oppPlaceId);
                     }
                 }
             };
