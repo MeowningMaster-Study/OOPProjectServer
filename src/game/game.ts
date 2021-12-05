@@ -121,9 +121,104 @@ export class Game {
                 this.checkFinishedMonastery(this.field.get(bx + x, by + y));
             }
         }
+
+        // check sides
+        const { sides } = tile.borders;
+        const placeIds = new Set<number>();
+        sides.forEach((id) => {
+            if (getPlaceType(id) !== PlaceType.None) {
+                placeIds.add(id);
+            }
+        });
+
+        for (const id of placeIds) {
+            const placeType = getPlaceType(id) as
+                | PlaceType.Town
+                | PlaceType.Road;
+            const checked = new Field(false);
+            const tiles: { x: number; y: number }[] = [
+                { x: tile.position.x, y: tile.position.y },
+            ];
+            const meeples = new Array<Meeple>();
+            if (tile.meeple) {
+                meeples.push(tile.meeple);
+            }
+            let shieldsCount = 0;
+            let fail = false;
+
+            const checkTile = (x: number, y: number, id: number) => {
+                if (fail) return;
+                checked.set(x, y, true);
+                for (let i = 0; i < sides.length; i += 1) {
+                    if (sides[i] === id) {
+                        const { x, y } = Tile.getSideOffset(i);
+                        const tile = this.field.get(bx + x, by + y);
+                        if (!tile) {
+                            fail = true;
+                            return;
+                        }
+                        const oppSide = Tile.getOppositeSide(i);
+                        const oppPlaceId = tile.borders.sides[oppSide];
+                        if (placeType !== getPlaceType(oppPlaceId)) {
+                            fail = true;
+                            return;
+                        }
+                        if (!tile.position) {
+                            throw new Error("No tile position");
+                        }
+                        if (placeType === PlaceType.Town) {
+                            if (tile.type.shield) {
+                                shieldsCount += 1;
+                            }
+                        }
+                        tiles.push({ x: tile.position.x, y: tile.position.y });
+                        if (tile.meeple) {
+                            meeples.push(tile.meeple);
+                        }
+                        checkTile(bx + x, by + y, oppPlaceId);
+                    }
+                }
+            };
+
+            let maxMeeplesCount = 0;
+            const meeplesCount: { player: Player; count: number }[] = [];
+            this.players.forEach((player) => {
+                let count = 0;
+                meeples.forEach((meeple) => {
+                    if (meeple.owner === player) {
+                        count += 1;
+                    }
+                });
+
+                if (maxMeeplesCount < count) maxMeeplesCount = count;
+                meeplesCount.push({ player: player, count });
+            });
+
+            const scores: { playerId: PlayerId; amount: number }[] =
+                meeplesCount
+                    .filter((x) => x.count === maxMeeplesCount)
+                    .map((x) => {
+                        return {
+                            playerId: x.player.id,
+                            amount:
+                                x.count *
+                                    (placeType === PlaceType.Road ? 1 : 2) +
+                                shieldsCount * 2,
+                        };
+                    });
+
+            checkTile(bx, by, id);
+            if (!fail) {
+                this.finishObject(this.table, {
+                    type: placeType,
+                    tiles,
+                    scores,
+                });
+            }
+        }
     }
 
-    // checkFinishedSide()
+    //checkFinishedSide(tile: Tile, placeId: number, checked: Field<boolean>);
 
     checkFinishedMonastery(tile: Tile | undefined) {
         if (!tile || !tile.position || !tile.meeple || !tile.type.monastery) {

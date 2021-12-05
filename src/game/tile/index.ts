@@ -42,13 +42,24 @@ export type TileType = {
 export class Tile {
     position?: { x: number; y: number };
     type: TileType;
-    rotation = 0;
+    borders: TileBorders;
+    _rotation = 0;
     meeple?: Meeple;
     seed: number;
 
     constructor(type: TileType) {
         this.type = type;
+        this.borders = this.getBorders();
         this.seed = getRandomInt(-2_147_483_648, 2_147_483_647);
+    }
+
+    get rotation() {
+        return this._rotation;
+    }
+
+    set rotation(x: number) {
+        this._rotation = x;
+        this.borders = this.getBorders();
     }
 
     getBorders(): TileBorders {
@@ -71,5 +82,25 @@ export class Tile {
         }
 
         return { sides, halves };
+    }
+
+    static getOppositeSide(side: number) {
+        return (side + 2) % 4;
+    }
+
+    static getSideOffset(side: number): { x: number; y: number } {
+        if (side === 0) {
+            return { x: -1, y: 0 };
+        }
+        if (side === 1) {
+            return { x: 0, y: 1 };
+        }
+        if (side === 2) {
+            return { x: 1, y: 0 };
+        }
+        if (side === 3) {
+            return { x: 0, y: -1 };
+        }
+        throw new Error("Incorrect side");
     }
 }
