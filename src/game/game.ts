@@ -188,10 +188,6 @@ export class Game {
                         }
                         const oppSide = Tile.getOppositeSide(i);
                         const oppPlaceId = tile.borders.sides[oppSide];
-                        if (placeType !== getPlaceType(oppPlaceId)) {
-                            fail = true;
-                            return;
-                        }
                         if (!tile.position) {
                             throw new Error("No tile position");
                         }
