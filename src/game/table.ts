@@ -1,13 +1,13 @@
 import { newId } from "../utils.ts";
 import { Player } from "./player.ts";
-import { Field } from "./field.ts";
+import { Game } from "./game.ts";
 
 export type TableId = string;
 
 export class Table {
     id: TableId;
     players: Set<Player>;
-    field?: Field;
+    game?: Game;
 
     constructor() {
         this.id = "T" + newId();
@@ -15,7 +15,7 @@ export class Table {
     }
 
     startGame() {
-        this.field = new Field([...this.players]);
-        return this.field;
+        this.game = new Game([...this.players]);
+        return this.game;
     }
 }

@@ -6,7 +6,7 @@ import { PutTileData } from "./eventHandler.ts";
 
 export const fieldSizeHalf = 72;
 export const fieldSize = fieldSizeHalf * 2;
-export class Field {
+export class Game {
     round = 0;
     players: Player[];
     field: (Tile | undefined)[][];

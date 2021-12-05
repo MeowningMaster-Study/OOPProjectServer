@@ -4,7 +4,7 @@ import { InActions, OutActions, inActions, outActions } from "./actions.ts";
 import { Player, PlayerId } from "./player.ts";
 import { Table, TableId } from "./table.ts";
 import { Tile } from "./tile/index.ts";
-import { fieldSizeHalf } from "./field.ts";
+import { fieldSizeHalf } from "./game.ts";
 
 const putTileDataSchema = z.object({
     position: z.object({
@@ -126,7 +126,7 @@ const init = (log: (message: string) => void) => {
     };
 
     const endGame = (table: Table) => {
-        table.field = undefined;
+        table.game = undefined;
         table.players.forEach((toNotify) =>
             notifyPlayer(toNotify, outActions.GAME_ENDED)
         );
@@ -159,11 +159,11 @@ const init = (log: (message: string) => void) => {
         if (!table) {
             throw new Error("The player has no table put tile on");
         }
-        const field = table.field;
-        if (!field) {
+        const game = table.game;
+        if (!game) {
             throw new Error("Start game firstly");
         }
-        const tile = field.putTile(player, tileData);
+        const tile = game.putTile(player, tileData);
         [...table.players]
             .filter((x) => x != player)
             .forEach((toNotify) =>
@@ -172,11 +172,11 @@ const init = (log: (message: string) => void) => {
                     tile,
                 })
             );
-        if (!field.currentTile) {
+        if (!game.currentTile) {
             endGame(table);
             return;
         }
-        sendTile(field.currentTile, field.getCurrentPlayer());
+        sendTile(game.currentTile, game.getCurrentPlayer());
     };
 
     const processMessage = (message: string, player: Player) => {
