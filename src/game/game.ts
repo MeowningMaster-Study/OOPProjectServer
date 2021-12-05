@@ -175,7 +175,9 @@ export class Game {
                         if (tile.meeple) {
                             meeples.push(tile.meeple);
                         }
-                        checkTile(bx + x, by + y, oppPlaceId);
+                        if (!checked.get(bx + x, by + y)) {
+                            checkTile(bx + x, by + y, oppPlaceId);
+                        }
                     }
                 }
             };
