@@ -194,6 +194,7 @@ export class Game {
             for (; queuePos < queue.length; queuePos += 1) {
                 const { x: bx, y: by, id } = queue[queuePos];
                 const tileq = this.field.get(bx, by);
+                checked.set(bx, by, true);
                 if (!tileq) {
                     continue loopSides;
                 }
