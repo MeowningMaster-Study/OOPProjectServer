@@ -141,17 +141,16 @@ export class Game {
         if (!tile.position) {
             return;
         }
-
+        const { sides } = tile.borders;
         const { x: bx, y: by } = tile.position;
 
-        for (let x = -1; x <= 1; x += 1) {
-            for (let y = -1; y <= 1; y += 1) {
-                this.checkFinishedMonastery(this.field.get(bx + x, by + y));
-            }
+        for (let i = 0; i < sides.length; i += 1) {
+            const { x: ox, y: oy } = Tile.getSideOffset(i);
+            const x = bx + ox,
+                y = by + oy;
+            this.checkFinishedMonastery(this.field.get(x, y));
         }
 
-        // check sides
-        const { sides } = tile.borders;
         const placeIds = new Set<number>();
         sides.forEach((id) => {
             if (getPlaceType(id) !== PlaceType.None) {
@@ -159,54 +158,71 @@ export class Game {
             }
         });
 
-        for (const id of placeIds) {
-            const placeType = getPlaceType(id) as
-                | PlaceType.Town
-                | PlaceType.Road;
+        loopSides: for (const id of placeIds) {
+            const place = getPlaceType(id) as PlaceType.Town | PlaceType.Road;
             const checked = new Field(false);
-            const tiles: { x: number; y: number }[] = [];
+            checked.set(tile.position.x, tile.position.y, true);
+            const queue: { x: number; y: number; id: number }[] = [];
+            queue.push({ ...tile.position, id });
+            let queuePos = queue.length;
             const meeples = new Array<Meeple>();
             if (tile.meeple) {
                 meeples.push(tile.meeple);
             }
-            let shieldsCount = 0;
-            let fail = false;
+            let shields = 0;
+            if (id === 5 && tile.type.shield) {
+                shields += 1;
+            }
 
-            const checkTile = (x: number, y: number, id: number) => {
-                if (fail) return;
-                if (checked.get(x, y)) return;
-                checked.set(x, y, true);
-                console.debug({ x, y });
-                for (let i = 0; i < sides.length; i += 1) {
-                    if (sides[i] === id) {
-                        const { x: ox, y: oy } = Tile.getSideOffset(i);
-                        const x = bx + ox,
-                            y = by + oy;
-                        const tileToCheck = this.field.get(x, y);
-                        if (!tileToCheck) {
-                            fail = true;
-                            return;
-                        }
-                        const oppSide = Tile.getOppositeSide(i);
-                        const oppPlaceId = tileToCheck.borders.sides[oppSide];
-                        if (!tileToCheck.position) {
-                            throw new Error("No tile position");
-                        }
-                        if (
-                            placeType === PlaceType.Town &&
-                            oppPlaceId === 5 &&
-                            tileToCheck.type.shield
-                        ) {
-                            shieldsCount += 1;
-                        }
-                        tiles.push({ x, y });
-                        if (tileToCheck.meeple) {
-                            meeples.push(tileToCheck.meeple);
-                        }
-                        checkTile(x, y, oppPlaceId);
-                    }
+            for (let i = 0; i < sides.length; i += 1) {
+                if (sides[i] != id) {
+                    continue;
                 }
-            };
+                const { x: ox, y: oy } = Tile.getSideOffset(i);
+                const x = bx + ox,
+                    y = by + oy;
+                const tileToCheck = this.field.get(x, y);
+                if (!tileToCheck) {
+                    continue loopSides;
+                }
+                const placeIdToCheck =
+                    tileToCheck.borders.sides[Tile.getOppositeSide(i)];
+                queue.push({ x, y, id: placeIdToCheck });
+            }
+
+            for (; queuePos < queue.length; queuePos += 1) {
+                const { x, y, id } = queue[queuePos];
+                const tileq = this.field.get(x, y);
+                if (!tileq) {
+                    continue loopSides;
+                }
+                if (!tileq.position) {
+                    throw new Error("No tile position");
+                }
+                if (tileq.meeple) {
+                    meeples.push(tileq.meeple);
+                }
+                if (id === 5 && tile.type.shield) {
+                    shields += 1;
+                }
+                const { sides } = tileq.borders;
+                for (let i = 0; i < sides.length; i += 1) {
+                    if (sides[i] != id) {
+                        continue;
+                    }
+                    const { x: ox, y: oy } = Tile.getSideOffset(i);
+                    const x = bx + ox,
+                        y = by + oy;
+                    if (checked.get(x, y)) continue;
+                    const tileToCheck = this.field.get(x, y);
+                    if (!tileToCheck) {
+                        continue loopSides;
+                    }
+                    const placeIdToCheck =
+                        tileToCheck.borders.sides[Tile.getOppositeSide(i)];
+                    queue.push({ x, y, id: placeIdToCheck });
+                }
+            }
 
             let maxMeeplesCount = 0;
             const meeplesCount: { player: Player; count: number }[] = [];
@@ -229,21 +245,21 @@ export class Game {
                         return {
                             playerId: x.player.id,
                             amount:
-                                tiles.length *
-                                    (placeType === PlaceType.Road ? 1 : 2) +
-                                shieldsCount * 2,
+                                queue.length *
+                                    (place === PlaceType.Town ? 2 : 1) +
+                                shields * 2,
                         };
                     });
 
-            console.log(tile.position.x, tile.position.y, id);
-            checkTile(tile.position.x, tile.position.y, id);
-            if (!fail) {
-                this.finishObject(this.table, {
-                    type: placeType,
-                    tiles,
-                    scores,
-                });
-            }
+            const tiles = queue.map((x) => {
+                return { x: x.x, y: x.y };
+            });
+
+            this.finishObject(this.table, {
+                type: place,
+                tiles,
+                scores,
+            });
         }
     }
 
