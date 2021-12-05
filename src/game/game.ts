@@ -144,11 +144,12 @@ export class Game {
         const { sides } = tile.borders;
         const { x: bx, y: by } = tile.position;
 
-        for (let i = 0; i < sides.length; i += 1) {
-            const { x: ox, y: oy } = Tile.getSideOffset(i);
-            const x = bx + ox,
-                y = by + oy;
-            this.checkFinishedMonastery(this.field.get(x, y));
+        for (const ox of [-1, 0, 1]) {
+            for (const oy of [-1, 0, 1]) {
+                const x = bx + ox,
+                    y = by + oy;
+                this.checkFinishedMonastery(this.field.get(x, y));
+            }
         }
 
         const placeIds = new Set<number>();
