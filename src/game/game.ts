@@ -79,6 +79,33 @@ export class Game {
         return meeple;
     }
 
+    checkConsistency(tile: Tile) {
+        if (!tile.position) {
+            throw new Error("No position");
+        }
+
+        const { x: bx, y: by } = tile.position;
+        const { sides } = tile.borders;
+        let nonEmptyCount = 0;
+        for (let i = 0; i < sides.length; i += 1) {
+            const { x, y } = Tile.getSideOffset(i);
+            const placeType = getPlaceType(sides[i]);
+            const oppSide = Tile.getOppositeSide(i);
+            const tileToCheck = this.field.get(bx + x, by + y);
+            if (tileToCheck) {
+                nonEmptyCount += 1;
+                const placeIdToCheck = tileToCheck.borders.sides[oppSide];
+                const placeTypeToCheck = getPlaceType(placeIdToCheck);
+                if (placeType !== placeTypeToCheck) {
+                    throw new Error("Sides doesn't match");
+                }
+            }
+        }
+        if (nonEmptyCount === 0) {
+            throw new Error("Tile shouldn't be alone");
+        }
+    }
+
     putTile(player: Player, tileData: PutTileData) {
         if (player !== this.getCurrentPlayer()) {
             throw new Error("Wait for your turn");
@@ -102,6 +129,7 @@ export class Game {
         }
         tile.position = tileData.position;
         tile.rotation = tileData.rotation;
+        this.checkConsistency(tile);
         this.field.set(tileData.position.x, tileData.position.y, tile);
         this.checkFinishedObjects(tile);
         this.round++;
