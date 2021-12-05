@@ -1,10 +1,10 @@
-import { formatCode as fc, formatBold as fb } from "./telegram/index.ts";
+import { formatCode as fc, formatBold as fb } from "../telegram/index.ts";
 import { z, ZodError } from "https://deno.land/x/zod@v3.11.6/mod.ts";
-import { InActions, OutActions, inActions, outActions } from "./gameActions.ts";
-import { Player, PlayerId } from "./gameObjects/player.ts";
-import { Table, TableId } from "./gameObjects/table.ts";
-import { Tile } from "./gameObjects/tile/index.ts";
-import { fieldSizeHalf } from "./gameObjects/field.ts";
+import { InActions, OutActions, inActions, outActions } from "./actions.ts";
+import { Player, PlayerId } from "./player.ts";
+import { Table, TableId } from "./table.ts";
+import { Tile } from "./tile/index.ts";
+import { fieldSizeHalf } from "./field.ts";
 
 const putTileDataSchema = z.object({
     position: z.object({

@@ -2,7 +2,7 @@ import { Player } from "./player.ts";
 import { Tile, getPlaceType, PlaceType } from "./tile/index.ts";
 import { tilesTypes, countOfTiles, startingTileType } from "./tile/types.ts";
 import { Meeple, playerMeeplesCount } from "./meeple.ts";
-import { PutTileData } from "../eventHandler.ts";
+import { PutTileData } from "./eventHandler.ts";
 
 export const fieldSizeHalf = 72;
 export const fieldSize = fieldSizeHalf * 2;

@@ -1,7 +1,7 @@
 import { formatCode as fc, formatBold as fb } from "./telegram/index.ts";
-import { Player } from "./gameObjects/player.ts";
-import eventHandler from "./eventHandler.ts";
-import { outActions } from "./gameActions.ts";
+import eventHandler from "./game/eventHandler.ts";
+import { Player } from "./game/player.ts";
+import { outActions } from "./game/actions.ts";
 
 const init = async (port: number, log: (message: string) => void) => {
     const players = new Map<WebSocket, Player>();
