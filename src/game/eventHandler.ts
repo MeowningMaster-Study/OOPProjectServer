@@ -242,6 +242,9 @@ const init = (log: (message: string) => void) => {
                         tableId,
                         tableName: table.name,
                         players: [...table.players].map((player) => player.id),
+                        colors: [...table.players].map(
+                            (player) => player.color
+                        ),
                     };
                 }
                 return {
