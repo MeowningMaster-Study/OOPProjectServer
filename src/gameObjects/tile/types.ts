@@ -31,8 +31,9 @@ export const tilesTypes: TileType[] = tilesTypesRaw.map((x, i) => {
     return { id: i, sides: x[0], halves: x[1], monastery: x[2], shield: x[3] };
 });
 
-export const firstTileType = tilesTypes[19];
+export const startingTileType = tilesTypes[19];
 
+// ignoring the starting tile
 export const countOfTiles = [
     4, 2, 1, 3, 1, 1, 2, 3, 2, 3, 2, 1, 2, 2, 3, 5, 3, 3, 3, 3, 8, 9, 4,
 ];

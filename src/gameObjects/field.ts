@@ -1,6 +1,6 @@
 import { Player } from "./player.ts";
 import { Tile, getPlaceType, PlaceType } from "./tile/index.ts";
-import { tilesTypes, countOfTiles, firstTileType } from "./tile/types.ts";
+import { tilesTypes, countOfTiles, startingTileType } from "./tile/types.ts";
 import { Meeple, playerMeeplesCount } from "./meeple.ts";
 import { PutTileData } from "../eventHandler.ts";
 
@@ -31,7 +31,7 @@ export class Field {
         this.deck = countOfTiles.flatMap((count, i) =>
             Array.from({ length: count }, () => new Tile(tilesTypes[i]))
         );
-        this.currentTile = new Tile(firstTileType);
+        this.currentTile = new Tile(startingTileType);
         this.currentTile.position = { x: 0, y: 0 };
         this.setTile(0, 0, this.currentTile);
         this.drawTile();
