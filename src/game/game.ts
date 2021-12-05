@@ -248,12 +248,13 @@ export class Game {
                 meeplesCount
                     .filter((x) => x.count === maxMeeplesCount)
                     .map((x) => {
+                        const amount =
+                            queue.length * (place === PlaceType.Town ? 2 : 1) +
+                            shields * 2;
+                        x.player.scores += amount;
                         return {
                             playerId: x.player.id,
-                            amount:
-                                queue.length *
-                                    (place === PlaceType.Town ? 2 : 1) +
-                                shields * 2,
+                            amount,
                         };
                     });
 
@@ -299,6 +300,8 @@ export class Game {
                 }
             }
         }
+
+        tile.meeple.owner.scores += 9;
 
         this.finishObject(this.table, {
             type: PlaceType.Monastery,

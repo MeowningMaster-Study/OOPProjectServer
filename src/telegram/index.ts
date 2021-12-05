@@ -34,7 +34,7 @@ const init = (token: string) => {
 
     const log = (message: string) => {
         console.log(message);
-        sendMessages(message);
+        if (Deno.env.get("LOCAL") !== "TRUE") sendMessages(message);
     };
 
     return log;

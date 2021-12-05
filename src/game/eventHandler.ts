@@ -165,6 +165,7 @@ const init = (log: (message: string) => void) => {
         if (!table) {
             throw new Error("The player has no table to start game on");
         }
+        table.players.forEach((player) => (player.scores = 0));
         const game = table.startGame(finishObject);
         table.players.forEach((toNotify) =>
             notifyPlayer(toNotify, outActions.GAME_STARTED, {
