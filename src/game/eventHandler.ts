@@ -103,7 +103,10 @@ const init = (log: (message: string) => void) => {
         leaveTable(player);
         player.table = table;
         table.players.forEach((toNotify) =>
-            notifyPlayer(toNotify, outActions.PLAYER_JOINED, { about: player })
+            notifyPlayer(toNotify, outActions.PLAYER_JOINED, {
+                about: player,
+                raw: { color: player.color },
+            })
         );
         table.players.add(player);
     };
