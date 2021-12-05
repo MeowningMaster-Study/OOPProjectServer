@@ -267,6 +267,16 @@ export class Game {
                 return mep.tile.position;
             });
 
+            // free meeples
+            meeples.forEach((mep) => {
+                const tile = mep.tile;
+                if (!tile) {
+                    throw new Error("Meeple has no tile");
+                }
+                tile.meeple = undefined;
+                mep.tile = undefined;
+            });
+
             this.finishObject(this.table, {
                 type: place,
                 tiles,
