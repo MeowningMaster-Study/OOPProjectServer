@@ -14,7 +14,10 @@ This section shows a list of incoming and outgoing messages with examples
 ```
 ### CREATE_TABLE
 ```jsonc
-{ "action": "CREATE_TABLE" }
+{
+    "action": "CREATE_TABLE",
+    "tableName": "Cool table"
+}
 ```
 ### JOIN_TABLE
 ```jsonc
@@ -51,8 +54,13 @@ This section shows a list of incoming and outgoing messages with examples
 ### PLAYER_JOINED
 ```jsonc
 {
-    "action":"PLAYER_JOINED",
-    "playerId":"PFVWXP"
+    "action": "PLAYER_JOINED",
+    "playerId": "P1IZ53",
+    "color": {
+        "r": 231,
+        "g": 123,
+        "b": 85
+    }
 }
 ```
 ### PLAYER_LEFT
@@ -72,9 +80,25 @@ This section shows a list of incoming and outgoing messages with examples
 ### JOIN_TABLE_SUCCESS
 ```jsonc
 {
-    "action":"JOIN_TABLE_SUCCESS",
-    "tableId":"TTEST",
-    "players":["PHE8VU","PD5HDB"]
+    "action": "JOIN_TABLE_SUCCESS",
+    "tableId": "TTEST",
+    "tableName": "Cool table",
+    "players": [
+        "PT89PB",
+        "P1IZ53"
+    ],
+    "colors": [ // per player
+        {
+            "r": 214,
+            "g": 45,
+            "b": 94
+        },
+        {
+            "r": 231,
+            "g": 123,
+            "b": 85
+        }
+    ]
 }
 ```
 ### JOIN_TABLE_FAILURE
