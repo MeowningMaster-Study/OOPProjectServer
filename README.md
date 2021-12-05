@@ -2,7 +2,7 @@
 - [Actions](#actions)
   - [Incoming](#in-actions)
   - [Outgoing](#out-actions)
-- [Tile structure](src/gameObjects/tile/index.md)
+- [Tile structure](src/gameObjects/tile/tileStructure.md)
 
 # Actions
 This section shows a list of incoming and outgoing messages with examples
