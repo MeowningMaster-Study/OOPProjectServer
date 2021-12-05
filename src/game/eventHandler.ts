@@ -136,9 +136,24 @@ const init = (log: (message: string) => void) => {
 
     const endGame = (table: Table) => {
         table.game = undefined;
-        const scores: Record<string, number> = {};
+        const scores: Record<
+            string,
+            {
+                roads: number;
+                towns: number;
+                fields: number;
+                monasteries: number;
+                summary: number;
+            }
+        > = {};
         table.players.forEach((player) => {
-            scores[player.id] = player.scores;
+            scores[player.id] = {
+                roads: 0,
+                towns: 0,
+                fields: 0,
+                monasteries: 0,
+                summary: player.scores,
+            };
         });
         table.players.forEach((toNotify) =>
             notifyPlayer(toNotify, outActions.GAME_ENDED, { raw: { scores } })
