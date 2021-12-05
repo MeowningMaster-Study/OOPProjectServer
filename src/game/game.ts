@@ -240,6 +240,10 @@ export class Game {
                 meeplesCount.push({ player: player, count });
             });
 
+            if (maxMeeplesCount === 0) {
+                continue loopSides;
+            }
+
             const scores: { playerId: PlayerId; amount: number }[] =
                 meeplesCount
                     .filter((x) => x.count === maxMeeplesCount)
@@ -253,8 +257,14 @@ export class Game {
                         };
                     });
 
-            const tiles = queue.map((x) => {
-                return { x: x.x, y: x.y };
+            const tiles = meeples.map((mep) => {
+                if (!mep.tile) {
+                    throw new Error("Meeple has now tile data");
+                }
+                if (!mep.tile.position) {
+                    throw new Error("Tile has no position");
+                }
+                return mep.tile.position;
             });
 
             this.finishObject(this.table, {
