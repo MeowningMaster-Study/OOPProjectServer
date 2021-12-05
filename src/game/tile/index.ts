@@ -28,13 +28,16 @@ export const getPlaceType = (placeId: number) => {
     throw new Error("Incorrect meeple place type");
 };
 
-export type TileType = {
-    id: number;
+type TileBorders = {
     sides: number[];
     halves: number[];
+};
+
+export type TileType = {
+    id: number;
     monastery: boolean;
     shield: boolean;
-};
+} & TileBorders;
 
 export class Tile {
     position?: { x: number; y: number };
@@ -46,5 +49,27 @@ export class Tile {
     constructor(type: TileType) {
         this.type = type;
         this.seed = getRandomInt(-2_147_483_648, 2_147_483_647);
+    }
+
+    getBorders(): TileBorders {
+        const sides = new Array<number>(4);
+        {
+            let p = this.rotation;
+            for (let i = 0; i < 4; i += 1) {
+                sides[p] = this.type.sides[i];
+                p = (p + 1) % 4;
+            }
+        }
+
+        const halves = new Array<number>(8);
+        {
+            let p = this.rotation * 2;
+            for (let i = 0; i < 8; i += 1) {
+                halves[p] = this.type.halves[i];
+                p = (p + 1) % 8;
+            }
+        }
+
+        return { sides, halves };
     }
 }

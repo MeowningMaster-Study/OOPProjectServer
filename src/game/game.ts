@@ -9,7 +9,6 @@ import { PutTileData } from "./eventHandler.ts";
 export type FinishedObject = {
     type: PlaceType.Road | PlaceType.Town | PlaceType.Monastery;
     tiles: { x: number; y: number }[];
-    // meeples: number[]; // meples count per player
     scores: { playerId: PlayerId; amount: number }[]; // scores per player
 };
 
