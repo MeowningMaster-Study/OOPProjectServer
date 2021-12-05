@@ -1,3 +1,16 @@
+# Tile objects
+Used to display the type of completed object in `OBJECT_FINISHED` message
+```jsonc
+{
+    None: 0,
+    Road: 1,
+    Town: 2,
+    Field: 3,
+    Monastery: 4
+}
+```
+
+# Tile structure
 ```jsonc
 {
     // starts from 0 on server and from 1 on front

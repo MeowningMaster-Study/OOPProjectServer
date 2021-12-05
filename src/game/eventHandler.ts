@@ -4,6 +4,7 @@ import { InActions, OutActions, inActions, outActions } from "./actions.ts";
 import { Player, PlayerId } from "./player.ts";
 import { Table, TableId } from "./table.ts";
 import { Tile } from "./tile/index.ts";
+import { FinishObjectFunc } from "./game.ts";
 import { fieldSizeHalf } from "./field.ts";
 
 const putTileDataSchema = z.object({
@@ -125,6 +126,14 @@ const init = (log: (message: string) => void) => {
         log(`${fb(to.id)} drawn tile ${tile.type.id + 1}, seed ${tile.seed}`);
     };
 
+    const finishObject: FinishObjectFunc = (table, object) => {
+        table.players.forEach((toNotify) =>
+            notifyPlayer(toNotify, outActions.OBJECT_FINISHED, {
+                raw: { object },
+            })
+        );
+    };
+
     const endGame = (table: Table) => {
         table.game = undefined;
         table.players.forEach((toNotify) =>
@@ -137,7 +146,7 @@ const init = (log: (message: string) => void) => {
         if (!table) {
             throw new Error("The player has no table to start game on");
         }
-        const game = table.startGame();
+        const game = table.startGame(finishObject);
         table.players.forEach((toNotify) =>
             notifyPlayer(toNotify, outActions.GAME_STARTED, {
                 raw: { tiles: 72 },

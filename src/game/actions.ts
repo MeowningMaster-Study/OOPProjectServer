@@ -23,6 +23,7 @@ export const OutActions = z.enum([
     "GAME_ENDED",
     "TILE_DRAWN",
     "TILE_PUTTED",
+    "OBJECT_FINISHED",
 ]);
 
 export const inActions = InActions.enum;

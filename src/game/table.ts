@@ -1,6 +1,6 @@
 import { newId } from "../utils.ts";
 import { Player } from "./player.ts";
-import { Game } from "./game.ts";
+import { Game, FinishObjectFunc } from "./game.ts";
 
 export type TableId = string;
 
@@ -14,8 +14,8 @@ export class Table {
         this.players = new Set();
     }
 
-    startGame() {
-        this.game = new Game([...this.players]);
+    startGame(finishObject: FinishObjectFunc) {
+        this.game = new Game(this, finishObject);
         return this.game;
     }
 }

@@ -1,4 +1,5 @@
 import { Player, PlayerId } from "./player.ts";
+import { Table } from "./table.ts";
 import { Tile, getPlaceType, PlaceType } from "./tile/index.ts";
 import { tilesTypes, countOfTiles, startingTileType } from "./tile/types.ts";
 import { Meeple, playerMeeplesCount } from "./meeple.ts";
@@ -12,21 +13,24 @@ export type FinishedObject = {
     scores: { playerId: PlayerId; amount: number }[]; // scores per player
 };
 
-export type FinishObjectFunc = (object: FinishedObject) => void;
+export type FinishObjectFunc = (table: Table, object: FinishedObject) => void;
 
 export class Game {
+    table: Table;
     round = 0;
     players: Player[];
     field: Field<Tile | undefined>;
     deck: Tile[];
     meeples: Map<Player, Meeple[]>;
     currentTile: Tile;
+    finishObject: FinishObjectFunc;
 
-    constructor(players: Player[]) {
-        this.players = players;
+    constructor(table: Table, finishObject: FinishObjectFunc) {
+        this.table = table;
+        this.players = [...table.players];
         this.field = new Field(undefined);
         this.meeples = new Map(
-            players.map((player) => [
+            this.players.map((player) => [
                 player,
                 Array.from(
                     { length: playerMeeplesCount },
@@ -37,6 +41,7 @@ export class Game {
         this.deck = countOfTiles.flatMap((count, i) =>
             Array.from({ length: count }, () => new Tile(tilesTypes[i]))
         );
+        this.finishObject = finishObject;
         this.currentTile = new Tile(startingTileType);
         this.currentTile.position = { x: 0, y: 0 };
         this.field.set(0, 0, this.currentTile);
@@ -99,12 +104,13 @@ export class Game {
         tile.position = tileData.position;
         tile.rotation = tileData.rotation;
         this.field.set(tileData.position.x, tileData.position.y, tile);
+        this.checkFinishedObjects(tile);
         this.round++;
         this.drawTile();
         return tile;
     }
 
-    checkFinishedObjects(tile: Tile, finish: FinishObjectFunc) {
+    checkFinishedObjects(tile: Tile) {
         if (!tile.position) {
             return;
         }
@@ -113,17 +119,14 @@ export class Game {
 
         for (let x = -1; x <= 1; x += 1) {
             for (let y = -1; y <= 1; y += 1) {
-                this.checkFinishedMonastery(
-                    this.field.get(bx + x, by + y),
-                    finish
-                );
+                this.checkFinishedMonastery(this.field.get(bx + x, by + y));
             }
         }
     }
 
     // checkFinishedSide()
 
-    checkFinishedMonastery(tile: Tile | undefined, finish: FinishObjectFunc) {
+    checkFinishedMonastery(tile: Tile | undefined) {
         if (!tile || !tile.position || !tile.meeple || !tile.type.monastery) {
             return;
         }
@@ -138,7 +141,7 @@ export class Game {
             }
         }
 
-        finish({
+        this.finishObject(this.table, {
             type: PlaceType.Monastery,
             tiles: [tile.position],
             scores: [{ playerId: tile.meeple.owner.id, amount: 9 }],
