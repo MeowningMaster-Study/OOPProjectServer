@@ -167,7 +167,7 @@ export class Game {
             queue.push({ ...tile.position, id });
             let queuePos = queue.length;
             const meeples = new Array<Meeple>();
-            if (tile.meeple) {
+            if (tile.meeple && tile.meeple.placeId === id) {
                 meeples.push(tile.meeple);
             }
             let shields = 0;
@@ -192,15 +192,15 @@ export class Game {
             }
 
             for (; queuePos < queue.length; queuePos += 1) {
-                const { x, y, id } = queue[queuePos];
-                const tileq = this.field.get(x, y);
+                const { x: bx, y: by, id } = queue[queuePos];
+                const tileq = this.field.get(bx, by);
                 if (!tileq) {
                     continue loopSides;
                 }
                 if (!tileq.position) {
                     throw new Error("No tile position");
                 }
-                if (tileq.meeple) {
+                if (tileq.meeple && tileq.meeple.placeId === id) {
                     meeples.push(tileq.meeple);
                 }
                 if (id === 5 && tile.type.shield) {
