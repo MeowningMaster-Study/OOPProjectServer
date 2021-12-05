@@ -170,3 +170,20 @@ This section shows a list of incoming and outgoing messages with examples
     "seed": -947640883 // tile seed for front
 }
 ```
+
+### OBJECT_FINISHED
+```jsonc
+{
+   "action": "OBJECT_FINISHED",
+   "object": {
+      "type": 2, // closed object type id
+      "tiles": [ // tiles with meeples to free
+         { "x": 0, "y": 1 }
+      ],
+      "scores":[ // per player
+         { "playerId": "PRZQLN", "amount": 4 }
+      ]
+   }
+}
+```
+[Closed object type id](src/game/tile/tile.md#tile-objects)
