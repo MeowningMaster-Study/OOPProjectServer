@@ -141,7 +141,13 @@ const init = (log: (message: string) => void) => {
         if (!table.game) {
             throw new Error("No game to end");
         }
-        table.game.countFinalScores();
+        try {
+            table.game.countFinalScores();
+        } catch (e) {
+            if (e instanceof Error) {
+                log(e.message);
+            }
+        }
         table.game = undefined;
         const scores: Record<string, Scores & { summary: number }> = {};
         table.players.forEach((player) => {

@@ -1,5 +1,5 @@
-export const fieldSizeHalf = 72;
-export const fieldSize = fieldSizeHalf * 2;
+export const fieldSizeHalf = 71;
+export const fieldSize = fieldSizeHalf * 2 + 1;
 
 export class Field<T> {
     data: T[][];
