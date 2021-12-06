@@ -21,7 +21,7 @@ export class Game {
     field: Field<Tile | undefined>;
     deck: Tile[];
     meeples: Map<Player, Meeple[]>;
-    currentTile: Tile;
+    currentTile?: Tile;
     finishObject: FinishObjectFunc;
 
     constructor(table: Table, finishObject: FinishObjectFunc) {
@@ -53,6 +53,7 @@ export class Game {
 
     drawTile() {
         if (this.deck.length === 0) {
+            this.currentTile = undefined;
             return undefined;
         }
         const i = Math.floor(Math.random() * this.deck.length);
