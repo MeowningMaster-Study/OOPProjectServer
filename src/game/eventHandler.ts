@@ -126,7 +126,7 @@ const init = (log: (message: string) => void) => {
         table.players.forEach((toNotify) =>
             notifyPlayer(toNotify, outActions.TILE_DRAWN, { tile })
         );
-        log(`${fb(to.id)} drawn tile ${tile.type.id + 1}, seed ${tile.seed}`);
+        log(`Remaining tiles: ${table?.game?.deck.length}`);
     };
 
     const finishObject: FinishObjectFunc = (table, object) => {
