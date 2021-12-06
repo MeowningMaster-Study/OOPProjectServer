@@ -5,6 +5,13 @@ export type PlayerId = string;
 
 export type rgb = { r: number; g: number; b: number };
 
+export type Scores = {
+    roads: number;
+    towns: number;
+    fields: number;
+    monasteries: number;
+};
+
 const colorsRaw: [number, number, number][] = [
     [214, 45, 94],
     [231, 123, 85],
@@ -20,7 +27,7 @@ export class Player {
     id: PlayerId;
     socket: WebSocket;
     table?: Table;
-    scores: 0;
+    scores!: Scores;
     color: rgb;
 
     static nextColor = 0;
@@ -28,8 +35,17 @@ export class Player {
     constructor(socket: WebSocket) {
         this.id = "P" + newId();
         this.socket = socket;
-        this.scores = 0;
         this.color = colors[Player.nextColor];
+        this.resetScores();
         Player.nextColor = (Player.nextColor + 1) % colors.length;
+    }
+
+    resetScores() {
+        this.scores = {
+            fields: 0,
+            monasteries: 0,
+            roads: 0,
+            towns: 0,
+        };
     }
 }

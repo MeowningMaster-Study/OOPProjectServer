@@ -1,7 +1,7 @@
 import { formatCode as fc, formatBold as fb } from "../telegram/index.ts";
 import { z, ZodError } from "https://deno.land/x/zod@v3.11.6/mod.ts";
 import { InActions, OutActions, inActions, outActions } from "./actions.ts";
-import { Player, PlayerId } from "./player.ts";
+import { Player, PlayerId, Scores } from "./player.ts";
 import { Table, TableId } from "./table.ts";
 import { Tile } from "./tile/index.ts";
 import { FinishObjectFunc } from "./game.ts";
@@ -138,24 +138,21 @@ const init = (log: (message: string) => void) => {
     };
 
     const endGame = (table: Table) => {
+        if (!table.game) {
+            throw new Error("No game to end");
+        }
+        table.game.countFinalScores();
         table.game = undefined;
-        const scores: Record<
-            string,
-            {
-                roads: number;
-                towns: number;
-                fields: number;
-                monasteries: number;
-                summary: number;
-            }
-        > = {};
+        const scores: Record<string, Scores & { summary: number }> = {};
         table.players.forEach((player) => {
+            let summary = 0;
+            for (const sc of Object.values(player.scores)) {
+                summary += sc;
+            }
+
             scores[player.id] = {
-                roads: 0,
-                towns: 0,
-                fields: 0,
-                monasteries: 0,
-                summary: player.scores,
+                ...player.scores,
+                summary,
             };
         });
         table.players.forEach((toNotify) =>
@@ -168,7 +165,7 @@ const init = (log: (message: string) => void) => {
         if (!table) {
             throw new Error("The player has no table to start game on");
         }
-        table.players.forEach((player) => (player.scores = 0));
+        table.players.forEach((player) => player.resetScores());
         const game = table.startGame(finishObject);
         table.players.forEach((toNotify) =>
             notifyPlayer(toNotify, outActions.GAME_STARTED, {

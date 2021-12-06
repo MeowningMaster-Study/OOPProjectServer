@@ -251,7 +251,11 @@ export class Game {
                         const amount =
                             queue.length * (place === PlaceType.Town ? 2 : 1) +
                             shields * 2;
-                        x.player.scores += amount;
+                        if (place === PlaceType.Town) {
+                            x.player.scores.towns += amount;
+                        } else {
+                            x.player.scores.roads += amount;
+                        }
                         return {
                             playerId: x.player.id,
                             amount,
@@ -301,7 +305,7 @@ export class Game {
             }
         }
 
-        tile.meeple.owner.scores += 9;
+        tile.meeple.owner.scores.monasteries += 9;
 
         this.finishObject(this.table, {
             type: PlaceType.Monastery,
@@ -309,4 +313,6 @@ export class Game {
             scores: [{ playerId: tile.meeple.owner.id, amount: 9 }],
         });
     }
+
+    countFinalScores() {}
 }
