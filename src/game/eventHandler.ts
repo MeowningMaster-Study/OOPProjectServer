@@ -4,6 +4,7 @@ import { InActions, OutActions, inActions, outActions } from "./actions.ts";
 import { Player, PlayerId, Scores } from "./player.ts";
 import { Table, TableId } from "./table.ts";
 import { Tile } from "./tile/index.ts";
+import { countOfTiles } from "./tile/types.ts";
 import { FinishObjectFunc } from "./game.ts";
 import { fieldSizeHalf } from "./field.ts";
 
@@ -169,7 +170,7 @@ const init = (log: (message: string) => void) => {
         const game = table.startGame(finishObject);
         table.players.forEach((toNotify) =>
             notifyPlayer(toNotify, outActions.GAME_STARTED, {
-                raw: { tiles: 72 },
+                raw: { tiles: countOfTiles.reduce((x, y) => x + y) + 1 },
             })
         );
         table.players.forEach((toNotify) =>

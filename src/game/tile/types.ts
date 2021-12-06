@@ -35,5 +35,5 @@ export const startingTileType = tilesTypes[19];
 
 // ignoring the starting tile
 export const countOfTiles = [
-    4, 2, 1, 3, 1, 1, 2, 3, 2, 3, 2, 1, 2, 2, 3, 5, 3, 3, 3, 3, 8, 9, 4,
+    4, 2, 1, 3, 1, 1, 2, 3, 2, 3, 2, 1, 2, 2, 3, 5, 3, 3, 3, 3, 8, 9, 4, 1,
 ];
