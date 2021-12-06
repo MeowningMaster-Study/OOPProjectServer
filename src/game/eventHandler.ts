@@ -236,7 +236,7 @@ const init = (log: (message: string) => void) => {
                 const tableSchema = z.object({ tableId: z.string() });
                 const { tableId } = tableSchema.parse(object);
                 const table = tables.get(tableId);
-                if (table) {
+                if (table && !table.game) {
                     joinTable(player, table);
                     return {
                         action: outActions.JOIN_TABLE_SUCCESS,
