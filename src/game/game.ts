@@ -105,7 +105,7 @@ export class Game {
         }
     }
 
-    putTile(player: Player, tileData: PutTileData) {
+    putTile(player: Player, tileData: PutTileData, notifyPlayers: () => void) {
         if (player !== this.getCurrentPlayer()) {
             throw new Error("Wait for your turn");
         }
@@ -116,6 +116,9 @@ export class Game {
         if (this.field.get(tileData.position.x, tileData.position.y)) {
             throw new Error("This place on field is already taken");
         }
+        tile.position = tileData.position;
+        tile.rotation = tileData.rotation;
+        this.checkConsistency(tile);
         const meeplePlace = getPlaceType(tileData.meeple);
         if (meeplePlace !== PlaceType.None) {
             const meeple = this.findFreeMeeple(player);
@@ -126,10 +129,8 @@ export class Game {
             meeple.tile = tile;
             tile.meeple = meeple;
         }
-        tile.position = tileData.position;
-        tile.rotation = tileData.rotation;
-        this.checkConsistency(tile);
         this.field.set(tile.position.x, tile.position.y, tile);
+        notifyPlayers();
         this.checkFinishedObjects(tile);
         this.round++;
         this.drawTile();

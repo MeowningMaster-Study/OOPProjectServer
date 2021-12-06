@@ -198,15 +198,18 @@ const init = (log: (message: string) => void) => {
         if (!game) {
             throw new Error("Start game firstly");
         }
-        const tile = game.putTile(player, tileData);
-        [...table.players]
-            .filter((x) => x != player)
-            .forEach((toNotify) =>
-                notifyPlayer(toNotify, outActions.TILE_PUTTED, {
-                    about: player,
-                    tile,
-                })
-            );
+        const notifyPlayers = () => {
+            [...table.players]
+                .filter((x) => x != player)
+                .forEach((toNotify) =>
+                    notifyPlayer(toNotify, outActions.TILE_PUTTED, {
+                        about: player,
+                        tile,
+                    })
+                );
+        };
+        const tile = game.putTile(player, tileData, notifyPlayers);
+
         if (!game.currentTile) {
             endGame(table);
             return;
