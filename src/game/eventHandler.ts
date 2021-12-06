@@ -228,6 +228,7 @@ const init = (log: (message: string) => void) => {
                 return {
                     action: outActions.CREATE_TABLE_SUCCESS,
                     tableId: table.id,
+                    color: player.color,
                 };
             }
 

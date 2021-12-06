@@ -74,9 +74,7 @@ export class Game {
         if (i === meeples.length) {
             return undefined;
         }
-        const meeple = meeples[i];
-        meeples.splice(i, 1);
-        return meeple;
+        return meeples[i];
     }
 
     checkConsistency(tile: Tile) {

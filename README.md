@@ -74,7 +74,8 @@ This section shows a list of incoming and outgoing messages with examples
 ```jsonc
 {
     "action":"CREATE_TABLE_SUCCESS",
-    "tableId":"TL081A"
+    "tableId":"TL081A",
+    "color":{ "r": 214, "g": 45, "b": 94 } // player color
 }
 ```
 ### JOIN_TABLE_SUCCESS
@@ -88,16 +89,8 @@ This section shows a list of incoming and outgoing messages with examples
         "P1IZ53"
     ],
     "colors": [ // per player
-        {
-            "r": 214,
-            "g": 45,
-            "b": 94
-        },
-        {
-            "r": 231,
-            "g": 123,
-            "b": 85
-        }
+        { "r": 214, "g": 45, "b": 94 },
+        { "r": 231, "g": 123, "b": 85 }
     ]
 }
 ```
