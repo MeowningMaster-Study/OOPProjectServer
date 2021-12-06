@@ -127,7 +127,12 @@ const init = (log: (message: string) => void) => {
         table.players.forEach((toNotify) =>
             notifyPlayer(toNotify, outActions.TILE_DRAWN, { tile })
         );
-        log(`Remaining tiles: ${table?.game?.deck.length}`);
+        log(
+            `Remaining tiles: ${
+                table?.game?.deck.length ??
+                0 + (table.game?.currentTile ? 1 : 0)
+            }`
+        );
     };
 
     const finishObject: FinishObjectFunc = (table, object) => {
