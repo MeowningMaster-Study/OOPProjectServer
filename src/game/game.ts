@@ -273,14 +273,7 @@ export class Game {
             });
 
             // free meeples
-            meeples.forEach((mep) => {
-                const tile = mep.tile;
-                if (!tile) {
-                    throw new Error("Meeple has no tile");
-                }
-                tile.meeple = undefined;
-                mep.tile = undefined;
-            });
+            meeples.forEach((mep) => mep.free);
 
             this.finishObject(this.table, {
                 type: place,
@@ -306,6 +299,7 @@ export class Game {
         }
 
         tile.meeple.owner.scores.monasteries += 9;
+        tile.meeple.free();
 
         this.finishObject(this.table, {
             type: PlaceType.Monastery,
@@ -441,6 +435,9 @@ export class Game {
                                 x.player.scores.roads += amount;
                             }
                         });
+
+                    // free meeples
+                    meeples.forEach((mep) => mep.free);
                 }
             }
         }

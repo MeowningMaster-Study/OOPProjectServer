@@ -10,4 +10,11 @@ export class Meeple {
     constructor(owner: Player) {
         this.owner = owner;
     }
+
+    free() {
+        if (this.tile) {
+            this.tile.meeple = undefined;
+            this.tile = undefined;
+        }
+    }
 }
