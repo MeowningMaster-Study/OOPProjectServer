@@ -89,6 +89,10 @@ export class Tile {
         return (side + 2) % 4;
     }
 
+    static getOppositeField(field: number) {
+        return (field + 4) % 8;
+    }
+
     static getSideOffset(side: number): { x: number; y: number } {
         if (side === 0) {
             return { x: -1, y: 0 };
@@ -100,6 +104,22 @@ export class Tile {
             return { x: 1, y: 0 };
         }
         if (side === 3) {
+            return { x: 0, y: -1 };
+        }
+        throw new Error("Incorrect side");
+    }
+
+    static getFieldOffset(field: number): { x: number; y: number } {
+        if ([0, 1].includes(field)) {
+            return { x: -1, y: 0 };
+        }
+        if ([2, 3].includes(field)) {
+            return { x: 0, y: 1 };
+        }
+        if ([4, 5].includes(field)) {
+            return { x: 1, y: 0 };
+        }
+        if ([6, 7].includes(field)) {
             return { x: 0, y: -1 };
         }
         throw new Error("Incorrect side");

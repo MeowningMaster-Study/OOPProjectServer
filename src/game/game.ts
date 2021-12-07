@@ -352,64 +352,30 @@ export class Game {
                     }
 
                     // count towns and roads
-                    const { sides } = tile.borders;
                     const placeId = meeple.placeId;
-                    const place = getPlaceType(placeId) as
-                        | PlaceType.Town
-                        | PlaceType.Road;
-                    const checked = new Field(false);
-                    checked.set(tile.position.x, tile.position.y, true);
-                    const queue: { x: number; y: number; id: number }[] = [];
-                    queue.push({ ...tile.position, id: placeId });
-                    let queuePos = queue.length;
-                    const meeples = [meeple];
-                    let shields = 0;
-                    if (placeId === 5 && tile.type.shield) {
-                        shields += 1;
-                    }
-
-                    for (let i = 0; i < sides.length; i += 1) {
-                        if (sides[i] != placeId) {
-                            continue;
-                        }
-                        const { x: bx, y: by } = tile.position;
-                        const { x: ox, y: oy } = Tile.getSideOffset(i);
-                        const x = bx + ox,
-                            y = by + oy;
-                        const tileToCheck = this.field.get(x, y);
-                        if (!tileToCheck) {
-                            continue;
-                        }
-                        const placeIdToCheck =
-                            tileToCheck.borders.sides[Tile.getOppositeSide(i)];
-                        queue.push({ x, y, id: placeIdToCheck });
-                    }
-
-                    for (; queuePos < queue.length; queuePos += 1) {
-                        const { x: bx, y: by, id } = queue[queuePos];
-                        const tileq = this.field.get(bx, by);
-                        checked.set(bx, by, true);
-                        if (!tileq) {
-                            continue;
-                        }
-                        if (!tileq.position) {
-                            throw new Error("No tile position");
-                        }
-                        if (tileq.meeple && tileq.meeple.placeId === id) {
-                            meeples.push(tileq.meeple);
-                        }
-                        if (id === 5 && tile.type.shield) {
+                    const place = getPlaceType(placeId);
+                    if (place === PlaceType.Town || place === PlaceType.Road) {
+                        const { sides } = tile.borders;
+                        const checked = new Field(false);
+                        checked.set(tile.position.x, tile.position.y, true);
+                        const queue: { x: number; y: number; id: number }[] =
+                            [];
+                        queue.push({ ...tile.position, id: placeId });
+                        let queuePos = queue.length;
+                        const meeples = [meeple];
+                        let shields = 0;
+                        if (placeId === 5 && tile.type.shield) {
                             shields += 1;
                         }
-                        const { sides } = tileq.borders;
+
                         for (let i = 0; i < sides.length; i += 1) {
-                            if (sides[i] != id) {
+                            if (sides[i] != placeId) {
                                 continue;
                             }
+                            const { x: bx, y: by } = tile.position;
                             const { x: ox, y: oy } = Tile.getSideOffset(i);
                             const x = bx + ox,
                                 y = by + oy;
-                            if (checked.get(x, y)) continue;
                             const tileToCheck = this.field.get(x, y);
                             if (!tileToCheck) {
                                 continue;
@@ -420,36 +386,180 @@ export class Game {
                                 ];
                             queue.push({ x, y, id: placeIdToCheck });
                         }
+
+                        for (; queuePos < queue.length; queuePos += 1) {
+                            const { x: bx, y: by, id } = queue[queuePos];
+                            const tileq = this.field.get(bx, by);
+                            checked.set(bx, by, true);
+                            if (!tileq) {
+                                continue;
+                            }
+                            if (!tileq.position) {
+                                throw new Error("No tile position");
+                            }
+                            if (tileq.meeple && tileq.meeple.placeId === id) {
+                                meeples.push(tileq.meeple);
+                            }
+                            if (id === 5 && tile.type.shield) {
+                                shields += 1;
+                            }
+                            const { sides } = tileq.borders;
+                            for (let i = 0; i < sides.length; i += 1) {
+                                if (sides[i] != id) {
+                                    continue;
+                                }
+                                const { x: ox, y: oy } = Tile.getSideOffset(i);
+                                const x = bx + ox,
+                                    y = by + oy;
+                                if (checked.get(x, y)) continue;
+                                const tileToCheck = this.field.get(x, y);
+                                if (!tileToCheck) {
+                                    continue;
+                                }
+                                const placeIdToCheck =
+                                    tileToCheck.borders.sides[
+                                        Tile.getOppositeSide(i)
+                                    ];
+                                queue.push({ x, y, id: placeIdToCheck });
+                            }
+                        }
+
+                        let maxMeeplesCount = 0;
+                        const meeplesCount: {
+                            player: Player;
+                            count: number;
+                        }[] = [];
+                        this.players.forEach((player) => {
+                            let count = 0;
+                            meeples.forEach((meeple) => {
+                                if (meeple.owner === player) {
+                                    count += 1;
+                                }
+                            });
+
+                            if (maxMeeplesCount < count)
+                                maxMeeplesCount = count;
+                            meeplesCount.push({ player: player, count });
+                        });
+
+                        meeplesCount
+                            .filter((x) => x.count === maxMeeplesCount)
+                            .forEach((x) => {
+                                const amount = queue.length + shields;
+                                if (place === PlaceType.Town) {
+                                    x.player.scores.towns += amount;
+                                } else {
+                                    x.player.scores.roads += amount;
+                                }
+                            });
+
+                        // free meeples
+                        meeples.forEach((mep) => mep.free);
                     }
 
-                    let maxMeeplesCount = 0;
-                    const meeplesCount: { player: Player; count: number }[] =
-                        [];
-                    this.players.forEach((player) => {
-                        let count = 0;
-                        meeples.forEach((meeple) => {
-                            if (meeple.owner === player) {
-                                count += 1;
-                            }
-                        });
+                    // count fields
+                    // if (place === PlaceType.Town || place === PlaceType.Road) {
+                    //     const { sides } = tile.borders;
+                    //     const checked = new Field(false);
+                    //     checked.set(tile.position.x, tile.position.y, true);
+                    //     const queue: { x: number; y: number; id: number }[] =
+                    //         [];
+                    //     queue.push({ ...tile.position, id: placeId });
+                    //     let queuePos = queue.length;
+                    //     const meeples = [meeple];
+                    //     let shields = 0;
+                    //     if (placeId === 5 && tile.type.shield) {
+                    //         shields += 1;
+                    //     }
 
-                        if (maxMeeplesCount < count) maxMeeplesCount = count;
-                        meeplesCount.push({ player: player, count });
-                    });
+                    //     for (let i = 0; i < sides.length; i += 1) {
+                    //         if (sides[i] != placeId) {
+                    //             continue;
+                    //         }
+                    //         const { x: bx, y: by } = tile.position;
+                    //         const { x: ox, y: oy } = Tile.getSideOffset(i);
+                    //         const x = bx + ox,
+                    //             y = by + oy;
+                    //         const tileToCheck = this.field.get(x, y);
+                    //         if (!tileToCheck) {
+                    //             continue;
+                    //         }
+                    //         const placeIdToCheck =
+                    //             tileToCheck.borders.sides[
+                    //                 Tile.getOppositeSide(i)
+                    //             ];
+                    //         queue.push({ x, y, id: placeIdToCheck });
+                    //     }
 
-                    meeplesCount
-                        .filter((x) => x.count === maxMeeplesCount)
-                        .forEach((x) => {
-                            const amount = queue.length + shields;
-                            if (place === PlaceType.Town) {
-                                x.player.scores.towns += amount;
-                            } else {
-                                x.player.scores.roads += amount;
-                            }
-                        });
+                    //     for (; queuePos < queue.length; queuePos += 1) {
+                    //         const { x: bx, y: by, id } = queue[queuePos];
+                    //         const tileq = this.field.get(bx, by);
+                    //         checked.set(bx, by, true);
+                    //         if (!tileq) {
+                    //             continue;
+                    //         }
+                    //         if (!tileq.position) {
+                    //             throw new Error("No tile position");
+                    //         }
+                    //         if (tileq.meeple && tileq.meeple.placeId === id) {
+                    //             meeples.push(tileq.meeple);
+                    //         }
+                    //         if (id === 5 && tile.type.shield) {
+                    //             shields += 1;
+                    //         }
+                    //         const { sides } = tileq.borders;
+                    //         for (let i = 0; i < sides.length; i += 1) {
+                    //             if (sides[i] != id) {
+                    //                 continue;
+                    //             }
+                    //             const { x: ox, y: oy } = Tile.getSideOffset(i);
+                    //             const x = bx + ox,
+                    //                 y = by + oy;
+                    //             if (checked.get(x, y)) continue;
+                    //             const tileToCheck = this.field.get(x, y);
+                    //             if (!tileToCheck) {
+                    //                 continue;
+                    //             }
+                    //             const placeIdToCheck =
+                    //                 tileToCheck.borders.sides[
+                    //                     Tile.getOppositeSide(i)
+                    //                 ];
+                    //             queue.push({ x, y, id: placeIdToCheck });
+                    //         }
+                    //     }
 
-                    // free meeples
-                    meeples.forEach((mep) => mep.free);
+                    //     let maxMeeplesCount = 0;
+                    //     const meeplesCount: {
+                    //         player: Player;
+                    //         count: number;
+                    //     }[] = [];
+                    //     this.players.forEach((player) => {
+                    //         let count = 0;
+                    //         meeples.forEach((meeple) => {
+                    //             if (meeple.owner === player) {
+                    //                 count += 1;
+                    //             }
+                    //         });
+
+                    //         if (maxMeeplesCount < count)
+                    //             maxMeeplesCount = count;
+                    //         meeplesCount.push({ player: player, count });
+                    //     });
+
+                    //     meeplesCount
+                    //         .filter((x) => x.count === maxMeeplesCount)
+                    //         .forEach((x) => {
+                    //             const amount = queue.length + shields;
+                    //             if (place === PlaceType.Town) {
+                    //                 x.player.scores.towns += amount;
+                    //             } else {
+                    //                 x.player.scores.roads += amount;
+                    //             }
+                    //         });
+
+                    //     // free meeples
+                    //     meeples.forEach((mep) => mep.free);
+                    // }
                 }
             }
         }
