@@ -23,6 +23,7 @@ export class Game {
     meeples: Map<Player, Meeple[]>;
     currentTile?: Tile;
     finishObject: FinishObjectFunc;
+    closedTownCounter = 0;
 
     constructor(table: Table, finishObject: FinishObjectFunc) {
         this.table = table;
@@ -272,6 +273,18 @@ export class Game {
                 return mep.tile.position;
             });
 
+            if (place === PlaceType.Town) {
+                const closedTownId = this.closedTownCounter;
+                this.closedTownCounter += 1;
+                for (const entry of queue) {
+                    const tile = this.field.get(entry.x, entry.y);
+                    if (!tile) {
+                        throw new Error("No tile");
+                    }
+                    tile.closedTownIds.push(closedTownId);
+                }
+            }
+
             // free meeples
             meeples.forEach((mep) => mep.free);
 
@@ -334,6 +347,7 @@ export class Game {
                             }
                         }
                         meeple.owner.scores.monasteries += tilesCount;
+                        meeple.free();
                     }
 
                     // count towns and roads

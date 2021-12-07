@@ -46,6 +46,7 @@ export class Tile {
     _rotation = 0;
     meeple?: Meeple;
     seed: number;
+    closedTownIds: number[] = [];
 
     constructor(type: TileType) {
         this.type = type;
