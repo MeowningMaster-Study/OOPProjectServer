@@ -227,6 +227,18 @@ export class Game {
                 }
             }
 
+            if (place === PlaceType.Town) {
+                const closedTownId = this.closedTownCounter;
+                this.closedTownCounter += 1;
+                for (const entry of queue) {
+                    const tile = this.field.get(entry.x, entry.y);
+                    if (!tile) {
+                        throw new Error("No tile");
+                    }
+                    tile.closedTownIds.push(closedTownId);
+                }
+            }
+
             let maxMeeplesCount = 0;
             const meeplesCount: { player: Player; count: number }[] = [];
             this.players.forEach((player) => {
@@ -272,18 +284,6 @@ export class Game {
                 }
                 return mep.tile.position;
             });
-
-            if (place === PlaceType.Town) {
-                const closedTownId = this.closedTownCounter;
-                this.closedTownCounter += 1;
-                for (const entry of queue) {
-                    const tile = this.field.get(entry.x, entry.y);
-                    if (!tile) {
-                        throw new Error("No tile");
-                    }
-                    tile.closedTownIds.push(closedTownId);
-                }
-            }
 
             // free meeples
             meeples.forEach((mep) => mep.free);
