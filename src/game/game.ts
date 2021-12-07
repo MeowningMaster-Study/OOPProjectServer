@@ -348,6 +348,7 @@ export class Game {
                         }
                         meeple.owner.scores.monasteries += tilesCount;
                         meeple.free();
+                        continue;
                     }
 
                     // count towns and roads
@@ -439,10 +440,7 @@ export class Game {
                     meeplesCount
                         .filter((x) => x.count === maxMeeplesCount)
                         .forEach((x) => {
-                            const amount =
-                                queue.length *
-                                    (place === PlaceType.Town ? 2 : 1) +
-                                shields * 2;
+                            const amount = queue.length + shields;
                             if (place === PlaceType.Town) {
                                 x.player.scores.towns += amount;
                             } else {
